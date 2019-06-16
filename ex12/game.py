@@ -14,6 +14,9 @@ class Game:
     BLACK_WINS = 2
     TIE = 0
 
+    WINNER_DICT = {WHITE: WHITE_WINS,
+                   BLACK: BLACK_WINS}
+
     ROWS = 6
     COLUMNS = 7
 
@@ -101,16 +104,19 @@ class Game:
 
     def make_move(self, column):
         Game.check_location(column=column)
+        if self.__winner != Game.GAME_IN_PROGRESS:
+            raise Exception("Illegal location")
         if not self.__possible_moves[column]:
             raise Exception("Illegal location")
         is_success, x, y = self.__update_board(self.__board, column, self.__current_turn)
         if is_success == Game.FAILED:
             raise Exception("Illegal location")
         self.__update_possible_moves(self.__board, self.__possible_moves)
+
+        self.__winner = Game.check_win_in_point(self.__board, x, y, self.__current_turn)
+
         if self.check_if_draw():
             self.__winner = Game.TIE
-        # Scan New Diagonal
-        Game.check_win_in_point(self.__board, x, y, self.__current_turn)
 
         self.flip_color()
 
@@ -145,11 +151,58 @@ class Game:
         """
         column = board[:, y]
         if Game.__search_for_victory(column, player):
-            print('We have a victory')
+            return Game.WINNER_DICT[player]
 
         row = board[x, :]
         if Game.__search_for_victory(row, player):
-            print('We have a victory')
+            return Game.WINNER_DICT[player]
+
+        main_slant = Game.__create_main_slant(board, x, y)
+        if Game.__search_for_victory(main_slant, player):
+            return Game.WINNER_DICT[player]
+
+        secondry_slant = Game.__create_secondry_slant(board, x, y)
+        if Game.__search_for_victory(secondry_slant, player):
+            return Game.WINNER_DICT[player]
+        return Game.GAME_IN_PROGRESS
+
+    @staticmethod
+    def __create_main_slant(board, x, y):
+        arr = []
+        index_x = x
+        index_y = y
+        while Game.is_in_board(index_x, index_y):
+            arr.append(board[index_x, index_y])
+            index_x += 1
+            index_y += 1
+
+        index_x = x - 1
+        index_y = y - 1
+        while Game.is_in_board(index_x, index_y):
+            arr.insert(0, board[index_x, index_y])
+            index_x -= 1
+            index_y -= 1
+        arr = np.array(arr)
+        return arr
+
+    @staticmethod
+    def __create_secondry_slant(board, x, y):
+        arr = []
+        index_x = x
+        index_y = y
+        while Game.is_in_board(index_x, index_y):
+            arr.append(board[index_x, index_y])
+            index_x += 1
+            index_y -= 1
+
+        index_x = x - 1
+        index_y = y + 1
+        while Game.is_in_board(index_x, index_y):
+            arr.insert(0, board[index_x, index_y])
+            index_x -= 1
+            index_y += 1
+        arr = np.array(arr)
+        return arr
 
     @staticmethod
     def __search_for_victory(one_dimension_arr, player):
@@ -163,6 +216,12 @@ class Game:
     def check_location(row=0, column=0):
         if not 0 <= column < Game.COLUMNS or not 0 <= row < Game.ROWS:
             raise Exception("Illegal location")
+
+    @staticmethod
+    def is_in_board(row, column):
+        if 0 <= row < Game.ROWS and 0 <= column < Game.COLUMNS:
+            return True
+        return False
 
     @property
     def winner(self):
@@ -185,37 +244,4 @@ class Game:
         return self.__possible_moves
 
 
-game1 = Game()
 
-# game1.make_move(0)
-# game1.make_move(1)
-# game1.make_move(0)
-# game1.make_move(1)
-# game1.make_move(0)
-# game1.make_move(1)
-# game1.make_move(0)
-# game1.make_move(1)
-
-
-game1.make_move(3)
-game1.make_move(3)
-game1.make_move(4)
-game1.make_move(4)
-game1.make_move(5)
-game1.make_move(5)
-game1.make_move(6)
-game1.make_move(6)
-
-# game1.make_move(6)
-
-# game1.make_move(3)
-# game1.make_move(3)
-# game1.make_move(4)
-# game1.make_move(4)
-# game1.make_move(5)
-# game1.make_move(5)
-# game1.make_move(6)
-# game1.make_move(6)
-
-
-print(game1)

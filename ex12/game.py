@@ -21,13 +21,19 @@ class Game:
     FAILED = -1
     SUCCESS = -2
 
+    WHITE_WINS_SEQ = '1111'
+    BLACK_WINS_SEQ = '2222'
+
+    GET_WIN_SEQ = {WHITE: WHITE_WINS_SEQ,
+                   BLACK: BLACK_WINS_SEQ}
+
     def __init__(self):
         self.__current_turn = Game.WHO_GO_FIRST
         self.__winner = Game.GAME_IN_PROGRESS
-        self.__board = np.ones((Game.ROWS, Game.COLUMNS), dtype=np.int8)
+        self.__board = np.zeros((Game.ROWS, Game.COLUMNS), dtype=np.int8)
         # Boolean list which start at true
         # In Python 1 is True and 0 is False
-        self.__possible_moves = np.zeros(Game.COLUMNS, dtype=np.bool)
+        self.__possible_moves = np.ones(Game.COLUMNS, dtype=np.bool)
 
     def is_game_over(self):
         if self.__winner != Game.GAME_IN_PROGRESS:
@@ -46,6 +52,13 @@ class Game:
                 possible_moves[i] = False
 
     @staticmethod
+    def __find_first_non_empty(arr):
+        for i, ele in enumerate(arr):
+            if ele != Game.EMPTY:
+                return i
+        return Game.NOT_FOUND  # if not found
+
+    @staticmethod
     def __update_board(board, column, current_turn):
         """
         This function adds disk to the board
@@ -57,17 +70,19 @@ class Game:
         Game.check_location(column=column)
         # Full column
         if board[0, column] != 0:
-            return Game.FAILED
+            return Game.FAILED, Game.NOT_FOUND, Game.NOT_FOUND
         # Scan the column
         column_data = board[:, column]
         # This function return Game.NOT_FOUND if not found
-        item_index = np.where(np.logical_or(column_data == Game.BLACK,
-                                            column_data == Game.WHITE))
-        if item_index[0].size == 0:
+        item_index = Game.__find_first_non_empty(column_data)
+        if item_index == Game.NOT_FOUND:
+            current_turn = np.int8(current_turn)
             board[Game.ROWS - 1, column] = current_turn
-            return Game.SUCCESS
-        board[item_index[0] - 1, column] = current_turn
-        return Game.SUCCESS
+            return Game.SUCCESS, Game.ROWS - 1, column
+        else:
+            current_turn = np.int8(current_turn)
+            board[item_index - 1, column] = current_turn
+            return Game.SUCCESS, item_index - 1, column
 
     def flip_color(self):
         """
@@ -76,8 +91,10 @@ class Game:
         """
         if self.__current_turn == Game.WHITE:
             self.__current_turn = Game.BLACK
+            return
         if self.__current_turn == Game.BLACK:
             self.__current_turn = Game.WHITE
+            return
 
     def check_if_draw(self):
         return not functools.reduce(lambda x, y: x or y, self.__possible_moves)
@@ -86,13 +103,16 @@ class Game:
         Game.check_location(column=column)
         if not self.__possible_moves[column]:
             raise Exception("Illegal location")
-        if self.__update_board(self.__board, column, self.__current_turn) == Game.FAILED:
+        is_success, x, y = self.__update_board(self.__board, column, self.__current_turn)
+        if is_success == Game.FAILED:
             raise Exception("Illegal location")
-        self.flip_color()
         self.__update_possible_moves(self.__board, self.__possible_moves)
         if self.check_if_draw():
             self.__winner = Game.TIE
-        #Scan New Diagonal
+        # Scan New Diagonal
+        Game.check_win_in_point(self.__board, x, y, self.__current_turn)
+
+        self.flip_color()
 
     def get_winner(self):
         return self.__winner
@@ -114,6 +134,32 @@ class Game:
         return self.__current_turn
 
     @staticmethod
+    def check_win_in_point(board, x, y, player):
+        """
+        Searchs for victory in current turn
+        :param board:
+        :param x:
+        :param y:
+        :param player: Game.BLACK or Game.WHITE
+        :return:
+        """
+        column = board[:, y]
+        if Game.__search_for_victory(column, player):
+            print('We have a victory')
+
+        row = board[x, :]
+        if Game.__search_for_victory(row, player):
+            print('We have a victory')
+
+    @staticmethod
+    def __search_for_victory(one_dimension_arr, player):
+        one_dimension_arr = one_dimension_arr.astype(str)
+        one_dimension_arr = ''.join(one_dimension_arr)
+        if Game.GET_WIN_SEQ[player] in one_dimension_arr:
+            return True
+        return False
+
+    @staticmethod
     def check_location(row=0, column=0):
         if not 0 <= column < Game.COLUMNS or not 0 <= row < Game.ROWS:
             raise Exception("Illegal location")
@@ -130,16 +176,46 @@ class Game:
     def board(self):
         return self.__board
 
+    @board.setter
+    def board(self, new_board):
+        self.__board = new_board
+
     @property
     def possible_moves(self):
         return self.__possible_moves
 
 
 game1 = Game()
-# for i in range(4):
-#     game1.make_move(3)
-game1.board[0, 0] = Game.EMPTY
-game1.board[1, 0] = Game.EMPTY
-game1.make_move(0)
-print(game1.possible_moves)
+
+# game1.make_move(0)
+# game1.make_move(1)
+# game1.make_move(0)
+# game1.make_move(1)
+# game1.make_move(0)
+# game1.make_move(1)
+# game1.make_move(0)
+# game1.make_move(1)
+
+
+game1.make_move(3)
+game1.make_move(3)
+game1.make_move(4)
+game1.make_move(4)
+game1.make_move(5)
+game1.make_move(5)
+game1.make_move(6)
+game1.make_move(6)
+
+# game1.make_move(6)
+
+# game1.make_move(3)
+# game1.make_move(3)
+# game1.make_move(4)
+# game1.make_move(4)
+# game1.make_move(5)
+# game1.make_move(5)
+# game1.make_move(6)
+# game1.make_move(6)
+
+
 print(game1)

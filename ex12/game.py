@@ -103,6 +103,12 @@ class Game:
         return not functools.reduce(lambda x, y: x or y, self.__possible_moves)
 
     def make_move(self, column):
+        """
+        Select a Column you want to insert into
+        and update self.board
+        :param column:
+        :return:
+        """
         Game.check_location(column=column)
         if self.__winner != Game.GAME_IN_PROGRESS:
             raise Exception("Illegal location")
@@ -119,6 +125,7 @@ class Game:
             self.__winner = Game.TIE
 
         self.flip_color()
+        return x, y
 
     def get_winner(self):
         return self.__winner
@@ -244,4 +251,30 @@ class Game:
         return self.__possible_moves
 
 
+g = Game()
+g.make_move(0)
 
+# This simple function checks who needs to play
+if g.get_current_player() == Game.WHITE:
+    print("It's White turn to play")
+if g.get_current_player() == Game.BLACK:
+    print("It's Black turn to play")
+#
+
+g.make_move(1)
+g.make_move(0)
+g.make_move(1)
+g.make_move(0)
+
+
+if g.get_player_at(1, 0) == Game.WHITE:
+    print("White is occupying (1,0) point")
+if g.get_player_at(1, 0) == Game.BLACK:
+    print("Black is occupying (1,0) point")
+if g.get_player_at(0, 0) is None:
+    print("no body is occupying (1,0) point")
+
+
+# Prints the board
+print(g.board)
+#

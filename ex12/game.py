@@ -48,7 +48,7 @@ class Game:
         return str(self.__board)
 
     @staticmethod
-    def __update_possible_moves(board, possible_moves):
+    def update_possible_moves(board, possible_moves):
         "This function update the list self.__possible_moves "
         for i, value in enumerate(board[0]):
             if value != Game.EMPTY:
@@ -99,8 +99,9 @@ class Game:
             self.__current_turn = Game.WHITE
             return
 
-    def check_if_draw(self):
-        return not functools.reduce(lambda x, y: x or y, self.__possible_moves)
+    @staticmethod
+    def check_if_draw(possible_moves):
+        return not functools.reduce(lambda x, y: x or y, possible_moves)
 
     def make_move(self, column):
         """
@@ -117,17 +118,23 @@ class Game:
         is_success, x, y = self.__update_board(self.__board, column, self.__current_turn)
         if is_success == Game.FAILED:
             raise Exception("Illegal location")
-        self.__update_possible_moves(self.__board, self.__possible_moves)
+        self.update_possible_moves(self.__board, self.__possible_moves)
 
         self.__winner = Game.check_win_in_point(self.__board, x, y, self.__current_turn)
 
-        if self.check_if_draw():
+        if Game.check_if_draw(self.__possible_moves):
             self.__winner = Game.TIE
 
         self.flip_color()
         return x, y
 
     def get_winner(self):
+        """
+        if White has won return the value Game.WHITE_WINS
+        if Black has won return the value Game.BLACK_WINS
+        if non of the parties has won the game return Game.GAME_IN_PROGRESS
+        :return: one of the up constants
+        """
         return self.__winner
 
     def get_player_at(self, row, col):
@@ -249,32 +256,3 @@ class Game:
     @property
     def possible_moves(self):
         return self.__possible_moves
-
-
-g = Game()
-g.make_move(0)
-
-# This simple function checks who needs to play
-if g.get_current_player() == Game.WHITE:
-    print("It's White turn to play")
-if g.get_current_player() == Game.BLACK:
-    print("It's Black turn to play")
-#
-
-g.make_move(1)
-g.make_move(0)
-g.make_move(1)
-g.make_move(0)
-
-
-if g.get_player_at(1, 0) == Game.WHITE:
-    print("White is occupying (1,0) point")
-if g.get_player_at(1, 0) == Game.BLACK:
-    print("Black is occupying (1,0) point")
-if g.get_player_at(0, 0) is None:
-    print("no body is occupying (1,0) point")
-
-
-# Prints the board
-print(g.board)
-#

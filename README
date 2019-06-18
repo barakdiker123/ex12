@@ -2,6 +2,45 @@ barakdiker
 313538225
 barak diker 
 
+No GUI:
+    Game Play Interface:
+    In order to play the game with no GUI
+    you should use the following commands
+    make_move(num_of_column int)
+    get_current_player()
+    get_player_at(x int, y int)
+
+    Easy sample No GUI:
+        g = Game()
+        g.make_move(0)
+
+        # This simple function checks who needs to play
+        if g.get_current_player() == Game.WHITE:
+            print("It's White turn to play")
+        if g.get_current_player() == Game.BLACK:
+            print("It's Black turn to play")
+        #
+
+        g.make_move(1)
+        g.make_move(0)
+        g.make_move(1)
+        g.make_move(0)
+
+
+        if g.get_player_at(1, 0) == Game.WHITE:
+            print("White is occupying (1,0) point")
+        if g.get_player_at(1, 0) == Game.BLACK:
+            print("Black is occupying (1,0) point")
+        if g.get_player_at(0, 0) is None:
+            print("no body is occupying (1,0) point")
+
+
+        # Prints the board
+        print(g.board)
+        #
+
+
+
 
 
 References:

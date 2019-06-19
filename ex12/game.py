@@ -1,7 +1,6 @@
 import numpy as np
 import functools
 from ex12.board import Board
-# import ex12.board
 
 class Game:
     GAME_IN_PROGRESS = None
@@ -86,6 +85,10 @@ class Game:
             return None
 
     def get_current_player(self):
+        """
+        returns the players that now plays
+        :return: Board.WHITE or Board.BLACK
+        """
         return self.__current_turn
 
     @staticmethod
@@ -93,4 +96,8 @@ class Game:
         if 0 <= row < Board.ROWS and 0 <= column < Board.COLUMNS:
             return True
         return False
+
+    @property
+    def board(self):
+        return self.__board_instance.board
 

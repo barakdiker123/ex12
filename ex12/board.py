@@ -50,12 +50,19 @@ class Board:
             if value != Board.EMPTY:
                 self.possible_moves[i] = False
 
-    @staticmethod
-    def __find_first_non_empty(arr):
-        for i, ele in enumerate(arr):
+    def __find_first_non_empty_helper(self, column):
+        column_data = self.__board[:, column]
+        for i, ele in enumerate(column_data):
             if ele != Board.EMPTY:
                 return i
         return Board.NOT_FOUND  # if not found
+
+    def find_first_non_empty(self, column):
+        item_index = self.__find_first_non_empty_helper(column)
+        if item_index == Board.NOT_FOUND:
+            return Board.ROWS - 1, column
+        else:
+            return item_index - 1, column
 
     def update_board(self, column, current_turn):
         """
@@ -70,17 +77,9 @@ class Board:
         if self.__board[0, column] != 0:
             return Board.FAILED, Board.NOT_FOUND, Board.NOT_FOUND
         # Scan the column
-        column_data = self.__board[:, column]
-        # This function return Game.NOT_FOUND if not found
-        item_index = Board.__find_first_non_empty(column_data)
-        if item_index == Board.NOT_FOUND:
-            current_turn = np.int8(current_turn)
-            self.__board[Board.ROWS - 1, column] = current_turn
-            return Board.SUCCESS, Board.ROWS - 1, column
-        else:
-            current_turn = np.int8(current_turn)
-            self.__board[item_index - 1, column] = current_turn
-            return Board.SUCCESS, item_index - 1, column
+        x, y = self.find_first_non_empty(column)
+        self.__board[x, y] = np.int8(current_turn)
+        return Board.SUCCESS, x, y
 
     def check_if_draw(self):
         self.update_possible_moves()
@@ -103,16 +102,17 @@ class Board:
         if Board.__search_for_victory(row, player):
             return Board.WINNER_DICT[player]
 
-        main_slant = self.__create_main_slant(x, y)
+        main_slant, _ = self.__create_main_slant(x, y)
         if Board.__search_for_victory(main_slant, player):
             return Board.WINNER_DICT[player]
 
-        secondry_slant = self.__create_secondry_slant(x, y)
+        secondry_slant, _ = self.__create_secondary_slant(x, y)
         if Board.__search_for_victory(secondry_slant, player):
             return Board.WINNER_DICT[player]
         return Board.GAME_IN_PROGRESS
 
     def __create_main_slant(self, x, y):
+        pivot_index = 0
         arr = []
         index_x = x
         index_y = y
@@ -127,10 +127,12 @@ class Board:
             arr.insert(0, self.__board[index_x, index_y])
             index_x -= 1
             index_y -= 1
+            pivot_index += 1
         arr = np.array(arr)
-        return arr
+        return arr, pivot_index
 
-    def __create_secondry_slant(self, x, y):
+    def __create_secondary_slant(self, x, y):
+        pivot_index = 0
         arr = []
         index_x = x
         index_y = y
@@ -145,8 +147,9 @@ class Board:
             arr.insert(0, self.__board[index_x, index_y])
             index_x -= 1
             index_y += 1
+            pivot_index += 1
         arr = np.array(arr)
-        return arr
+        return arr, pivot_index
 
     @staticmethod
     def __search_for_victory(one_dimension_arr, player):
@@ -166,3 +169,75 @@ class Board:
         if 0 <= row < Board.ROWS and 0 <= column < Board.COLUMNS:
             return True
         return False
+
+    @staticmethod
+    def sum_possibilities(data, important_index, player):
+
+        """
+        get all possible combination
+        :param data: line of column or slant from data
+        :param important_index: pivot index
+        :param player: Board.EMPTY or Board.WHITE or Board.BLACK
+        :return: sum of possible combination
+        """
+        # boundary conditions
+        min_index = max(important_index - 3, 0)
+        max_index = min(important_index + 4, len(data))
+        if len(data) < 4:
+            return 0
+        evaluate = 0
+        parse_data = data[min_index:max_index]
+        list_of_list_of_possible_wins = Board.scan(parse_data)
+        for lst in list_of_list_of_possible_wins:
+            if Board.valid_combination(lst, player):
+                evaluate += 1
+        return evaluate
+
+    @staticmethod
+    def valid_combination(lst, player):
+        for ele in lst:
+            if not ele == Board.EMPTY and not ele == player:
+                return False
+        return True
+
+    @staticmethod
+    def scan(data):
+
+        """
+        Return lst of lst of possbile data
+        :param data: lst of lst
+        :return:
+        """
+        lst = list()
+        for i in range(len(data) - 3):
+            temp_list = list()
+            for j in range(4):
+                temp_list.append(data[i + j])
+            lst.append(temp_list)
+        return lst
+
+    def sum_all_possibilities(self, player, x, y):
+        """
+        sum all the possibilies a single point can reach
+        Its important function for AI Evaluation
+        :param board: board type instance
+        :param player: Board.BLACK or Board.WHITE
+        :param x: coordinate int
+        :param y: coordinate int
+        :return: number of possibilities
+        """
+        # A variable in board has to be (Board.EMPTY,Board.WHITE,Board.BLACK)
+        column = self.__board[:, y]
+        total_eval = 0
+        total_eval += Board.sum_possibilities(column, x, player)
+
+        row = self.__board[x, :]
+        total_eval += Board.sum_possibilities(row, y, player)
+
+        main_slant, pivot_index = self.__create_main_slant(x, y)
+        total_eval += Board.sum_possibilities(main_slant, pivot_index, player)
+
+        secondry_slant, pivot_index = self.__create_secondary_slant(x, y)
+        total_eval += Board.sum_possibilities(secondry_slant, pivot_index, player)
+
+        return total_eval

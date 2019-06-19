@@ -2,6 +2,7 @@ import unittest
 
 from ex12.ai import *
 from ex12.game import *
+from ex12.board import *
 
 
 class TestAI(unittest.TestCase):
@@ -13,8 +14,9 @@ class TestAI(unittest.TestCase):
             self.game.make_move(0)
 
     def test_is_game_over1(self):
+        ai = AI(self.game, Board.WHITE)
         with self.assertRaises(Exception):
-            ai = AI(self.game, Game.WHITE)
-        self.assertRaises(NoPossibleMovesAI, AI, self.game, Game.WHITE)
+            ai.find_legal_move()
+        self.assertRaises(NoPossibleMovesAI, ai.find_legal_move)
 
         # self.assertEqual(self.ai.is_game_over(), True)

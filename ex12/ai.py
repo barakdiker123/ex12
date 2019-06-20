@@ -110,19 +110,32 @@ class AI:
 
 from ex12.game import Game
 
+
 class Wipe(object):
     def __repr__(self):
-        return '\n'*1000
+        return '\n' * 1000
+
+
+def check_win(game):
+    if game.get_winner() == game.WHITE_WINS:
+        print("The AI has won you easily!")
+    if game.get_winner() == game.BLACK_WINS:
+        print("You have done the impossible you won the AI!!")
+    if game.get_winner() == game.TIE:
+        print("TIE!")
+
 
 wipe = Wipe()
 if __name__ == "__main__":
     game = Game()
     while True:
         Wipe()
+        check_win(game)
         ai = AI(game, Board.WHITE)
         column_cal = ai.find_legal_move(AI.FAST_ALGORITHM_TIMEOUT)
         print("Computer played: %s" % column_cal)
         game.make_move(column_cal)
+        check_win(game)
         print(game)
         print("-----------------")
         print("<<0 1 2 3 4 5 6>>")

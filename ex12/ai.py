@@ -109,6 +109,7 @@ class AI:
 
 
 from ex12.game import Game
+import timeit
 
 
 class Wipe(object):
@@ -133,8 +134,11 @@ if __name__ == "__main__":
         Wipe()
         check_win(game)
         ai = AI(game, Board.WHITE)
+        start = timeit.default_timer()
         column_cal = ai.find_legal_move(AI.FAST_ALGORITHM_TIMEOUT)
-        print("Computer played: %s" % column_cal)
+        stop = timeit.default_timer()
+        time = stop - start
+        print("Computer played: %s \nTime: %s" % (column_cal, time))
         game.make_move(column_cal)
         check_win(game)
         print(game)
@@ -144,14 +148,15 @@ if __name__ == "__main__":
         while try_again:
             game.board_instance.update_possible_moves()
             col = int(input("Enter Your move:"))
-            if game.board_instance.possible_moves[col]:
-                game.make_move(col)
-                try_again = False
-            else:
-                Wipe()
-                print("Computer played: %s" % column_cal)
-                print("Invalid Move")
-                print(game)
-                print("-----------------")
-                print("<<0 1 2 3 4 5 6>>")
-                try_again = True
+            if 0 <= col < Board.COLUMNS:
+                if game.board_instance.possible_moves[col]:
+                    game.make_move(col)
+                    try_again = False
+                else:
+                    Wipe()
+                    print("Computer played: %s" % column_cal)
+                    print("Invalid Move")
+                    print(game)
+                    print("-----------------")
+                    print("<<0 1 2 3 4 5 6>>")
+                    try_again = True

@@ -35,6 +35,7 @@ class Board:
     WEIGH_AVOID_SECOND_ADD_WINNING = -100
     WEIGH_LOSING_FOR_SURE = -10000
     WEIGH_WINNING = 50
+    WEIGH_BLOCK_THREESOME_VALUE = 40
 
     #
     def __init__(self):
@@ -344,6 +345,23 @@ class Board:
                 dict_move[column] += Board.WEIGH_WINNING
             self.__board[x, y] = Board.EMPTY
 
+    def evaluate_how_close_player_to_threesome(self, __player, dict_move):
+        Board.WHITE_WINS_SEQ = '111'
+        Board.BLACK_WINS_SEQ = '222'
+        Board.GET_WIN_SEQ = {Board.WHITE: Board.WHITE_WINS_SEQ,
+                             Board.BLACK: Board.BLACK_WINS_SEQ}
+
+        for column in self.list_of_moves():
+            flag, x, y = self.update_board(column, __player)
+            if self.check_win_in_point(x, y, __player):
+                dict_move[column] += Board.WEIGH_BLOCK_THREESOME_VALUE
+            self.__board[x, y] = Board.EMPTY
+
+        Board.WHITE_WINS_SEQ = '1111'
+        Board.BLACK_WINS_SEQ = '2222'
+        Board.GET_WIN_SEQ = {Board.WHITE: Board.WHITE_WINS_SEQ,
+                             Board.BLACK: Board.BLACK_WINS_SEQ}
+
     def evaluate(self, __player, dict_move):
         """
         This function try to evaluate the situation on the board
@@ -357,6 +375,9 @@ class Board:
         self.evaluate_player_has_two_or_more_possible_wins_next_turn(
             Board.flip_color(__player),
             dict_move)
+        self.evaluate_how_close_player_to_threesome(__player, dict_move)
+        self.evaluate_how_close_player_to_threesome(Board.flip_color(__player),
+                                                    dict_move)
 
     def list_of_moves(self):
         """
@@ -368,5 +389,3 @@ class Board:
             if ele:
                 lst.append(i)
         return lst
-
-

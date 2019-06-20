@@ -29,7 +29,14 @@ class Board:
 
     GET_WIN_SEQ = {WHITE: WHITE_WINS_SEQ,
                    BLACK: BLACK_WINS_SEQ}
+    # AI constant used for evaluation
+    ALL_POSSIBILITIES = 16
+    WEIGH_POSSIBILITIES = 30
+    WEIGH_AVOID_SECOND_ADD_WINNING = -100
+    WEIGH_LOSING_FOR_SURE = -10000
+    WEIGH_WINNING = 50
 
+    #
     def __init__(self):
         self.__board = np.zeros((Board.ROWS, Board.COLUMNS), dtype=np.int8)
         # Boolean list which start at true
@@ -77,7 +84,6 @@ class Board:
         """
         Board.check_location(column=column)
         # Full column
-        # print(self.__board[0, column])
         if self.__board[0, column] != Board.EMPTY:
             return Board.FAILED, Board.NOT_FOUND, Board.NOT_FOUND
         # Scan the column
@@ -261,4 +267,106 @@ class Board:
         if self.__board[1, column] != Board.EMPTY:
             return False
         return True
+
+    def search_for_win_in_one_move(self, __player):
+        """
+        return the number of the winning column in one
+        if not found , return Board.NOT_FOUND = -1
+        :return:
+        """
+        for column in self.list_of_moves():
+            flag, x, y = self.update_board(column, __player)
+            if self.check_win_in_point(x, y, __player):
+                return column
+            self.__board[x, y] = Board.EMPTY
+        return Board.NOT_FOUND
+
+    def evaluate_via_centralize_point(self, __player, dict_move):
+        """
+        Using The sum_all_possibilities(player,x,y) from Board
+        we gave grade to each move
+        :return: update the self.dict_move
+        """
+        for column in self.list_of_moves():
+            flag, x, y = self.update_board(column, __player)
+            ratio = self.sum_all_possibilities(__player, x, y) / Board.ALL_POSSIBILITIES
+            evaluation = ratio * Board.WEIGH_POSSIBILITIES
+            dict_move[column] += evaluation
+            self.__board[x, y] = Board.EMPTY
+
+    def evaluate_via_avoid_second_add(self, __player, dict_move):
+        """
+        if __player == self.__player
+        If adding 2 disk to certain column cause winning than
+        avoid adding to column
+        if __player == not self.__player
+        If I add disk and my opponent add disk to the same column
+        and I am losing for sure
+        :return: update the self.dict_move
+        """
+        for column in self.list_of_moves():
+            if self.you_can_add_two_or_more_disk(column):
+                temp_player = Board.flip_color(__player)
+                # add 2 disks
+                self.update_board(column, temp_player)
+                flag, x, y = self.update_board(column, __player)
+                #
+                if self.check_win_in_point(x, y, __player):
+                    # Should decrease the value
+                    if __player == __player:
+                        dict_move[column] += Board.WEIGH_AVOID_SECOND_ADD_WINNING
+                    if __player == Board.flip_color(__player):
+                        dict_move[column] += Board.WEIGH_LOSING_FOR_SURE
+
+                self.__board[x, y] = Board.EMPTY  # init the higher
+                self.__board[x + 1, y] = Board.EMPTY  # 1 init below the higher
+
+    def get_count_of_possible_wins(self, __player):
+        """
+        Returns the number of possible absulote winning moves
+        :param __player:
+        :return:integer from 0 to COLUMNS
+        """
+        count = 0
+        self.update_possible_moves()
+        for column in self.list_of_moves():
+            flag, x, y = self.update_board(column, __player)
+            # print(self.__board)
+            if self.check_win_in_point(x, y, __player):  # is not Board.GAME_IN_PROGRESS:
+                count += 1
+            self.__board[x, y] = Board.EMPTY
+        return count
+
+    def evaluate_player_has_two_or_more_possible_wins_next_turn(self, __player, dict_move):
+        for column in self.list_of_moves():
+            flag, x, y = self.update_board(column, __player)
+            if self.get_count_of_possible_wins(__player) >= 2:
+                dict_move[column] += Board.WEIGH_WINNING
+            self.__board[x, y] = Board.EMPTY
+
+    def evaluate(self, __player, dict_move):
+        """
+        This function try to evaluate the situation on the board
+        and based on our functions try to find the best move
+        :return: update the self.dict_move
+        """
+        self.evaluate_via_centralize_point(__player, dict_move)
+        self.evaluate_via_avoid_second_add(Board.flip_color(__player), dict_move)
+        self.evaluate_via_avoid_second_add(__player, dict_move)
+        self.evaluate_player_has_two_or_more_possible_wins_next_turn(__player, dict_move)
+        self.evaluate_player_has_two_or_more_possible_wins_next_turn(
+            Board.flip_color(__player),
+            dict_move)
+
+    def list_of_moves(self):
+        """
+        This function get all possible moves
+        :return: lst of all possible moves
+        """
+        lst = []
+        for i, ele in enumerate(self.possible_moves):
+            if ele:
+                lst.append(i)
+        return lst
+
 

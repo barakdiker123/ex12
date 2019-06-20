@@ -101,3 +101,6 @@ class Game:
     def board(self):
         return self.__board_instance.board
 
+    @property
+    def board_instance(self):
+        return self.__board_instance

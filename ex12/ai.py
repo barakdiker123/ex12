@@ -117,6 +117,7 @@ class Wipe(object):
 
 
 def check_win(game):
+    Wipe()
     if game.get_winner() == game.WHITE_WINS:
         print("The AI has won you easily!")
     if game.get_winner() == game.BLACK_WINS:
@@ -141,11 +142,12 @@ if __name__ == "__main__":
         print("<<0 1 2 3 4 5 6>>")
         try_again = True
         while try_again:
+            game.board_instance.update_possible_moves()
             col = int(input("Enter Your move:"))
-            try:
+            if game.board_instance.possible_moves[col]:
                 game.make_move(col)
                 try_again = False
-            except Exception:
+            else:
                 Wipe()
                 print("Computer played: %s" % column_cal)
                 print("Invalid Move")

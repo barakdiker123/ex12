@@ -10,6 +10,13 @@ class NoPossibleMovesAI(Exception):
 
 
 class AI:
+    INSTANT_ALGORITHM_TIMEOUT = -1
+    FAST_ALGORITHM_TIMEOUT = -2
+    ALL_POSSIBILITIES = 16
+    WEIGH_POSSIBILITIES = 30
+    WEIGH_AVOID_SECOND_ADD_WINNING = -100
+    WEIGH_LOSING_FOR_SURE = -1000
+
     def __init__(self, game, player):
         """
         initiation
@@ -25,16 +32,18 @@ class AI:
         # get all valid move into eval_dict
         self.__temp_board.update_possible_moves()
         self.dict_move = {}
-        for move in self.__board_instance.possible_moves:
+        for move in self.list_of_moves():
             self.dict_move[move] = 0
 
     def is_game_over(self):
         "This function return False if the AI is not over"
         for i in range(Board.ROWS):
             for j in range(Board.COLUMNS):
-                if self.__board_instance.check_win_in_point(i, j, Board.WHITE) != Board.GAME_IN_PROGRESS:
+                if self.__board_instance.check_win_in_point(i, j, Board.WHITE) \
+                        != Board.GAME_IN_PROGRESS:
                     return True
-                if self.__board_instance.check_win_in_point(i, j, Board.BLACK) != Board.GAME_IN_PROGRESS:
+                if self.__board_instance.check_win_in_point(i, j, Board.BLACK) \
+                        != Board.GAME_IN_PROGRESS:
                     return True
         return False
 
@@ -65,11 +74,86 @@ class AI:
     def instant_algorithm(self):
         return random.choice(self.list_of_moves())
 
-    def fast_algorithm(self):
-        for column in self.__board_instance.possible_moves:
+    def search_for_win_in_one_move(self):
+        """
+        return the number of the winning column in one
+        if not found , return Board.NOT_FOUND = -1
+        :return:
+        """
+        for column in self.list_of_moves():
             flag, x, y = self.__temp_board.update_board(column, self.__player)
             if self.__temp_board.check_win_in_point(x, y, self.__player):
-                self.dict_move[column] += 100
+                return column
+            self.__temp_board.board[x, y] = Board.EMPTY
+        return Board.NOT_FOUND
+
+    def evaluate_via_centralize_point(self):
+        """
+        Using The sum_all_possibilities(player,x,y) from Board
+        we gave grade to each move
+        :return: update the self.dict_move
+        """
+        for column in self.list_of_moves():
+            flag, x, y = self.__temp_board.update_board(column, self.__player)
+            ratio = self.__temp_board.sum_all_possibilities(self.__player, x, y) / AI.ALL_POSSIBILITIES
+            evaluation = ratio * AI.WEIGH_POSSIBILITIES
+            self.dict_move[column] += evaluation
+            self.__temp_board.board[x, y] = Board.EMPTY
+
+    def evaluate_via_avoid_second_add_winning(self):
+        """
+        If adding 2 disk to certain column cause winning than
+        avoid adding to column
+        :return: update the self.dict_move
+        """
+        for column in self.list_of_moves():
+            if self.__temp_board.you_can_add_two_or_more_disk(column):
+                temp_player = Board.flip_color(self.__player)
+                # add 2 disks
+                self.__temp_board.update_board(column, temp_player)
+                flag, x, y = self.__temp_board.update_board(column, self.__player)
+                #
+                if self.__temp_board.check_win_in_point(x, y, self.__player):
+                    # Should decrease the value
+                    self.dict_move[column] += AI.WEIGH_AVOID_SECOND_ADD_WINNING
+                self.__temp_board.board[x, y] = Board.EMPTY  # init the higher
+                self.__temp_board.board[x + 1, y] = Board.EMPTY  # 1 init below the higher
+
+    def evaluate_via_avoid_second_add_losing(self):
+        """
+        If I add disk and my opponent add disk to the same column
+        and I am losing for sure
+        :return: update the self.dict_move
+        """
+        for column in self.list_of_moves():
+            if self.__temp_board.you_can_add_two_or_more_disk(column):
+                temp_player = Board.flip_color(self.__player)
+                # add 2 disks
+                self.__temp_board.update_board(column, self.__player)
+                flag, x, y = self.__temp_board.update_board(column, temp_player)
+                #
+                if self.__temp_board.check_win_in_point(x, y, temp_player):
+                    # Should decrease the value
+                    self.dict_move[column] += AI.WEIGH_LOSING_FOR_SURE
+                self.__temp_board.board[x, y] = Board.EMPTY  # init the higher
+                self.__temp_board.board[x + 1, y] = Board.EMPTY  # 1 init below the higher
+
+    def evaluate(self):
+        """
+        This function try to evaluate the situation on the board
+        and based on our functions try to find the best move
+        :return: update the self.dict_move
+        """
+        self.evaluate_via_centralize_point()
+        self.evaluate_via_avoid_second_add_losing()
+        self.evaluate_via_avoid_second_add_winning()
+
+    def fast_algorithm(self):
+        column_winning = self.search_for_win_in_one_move()
+        if column_winning != Board.NOT_FOUND:
+            return column_winning
+        self.evaluate()
+        print(self.dict_move)
         return AI.key_with_max_val(self.dict_move)
 
     @staticmethod
@@ -80,7 +164,7 @@ class AI:
         keys = list(dic.keys())
         return keys[values.index(max(values))]
 
-    def backtrack_helper(self):
+    def backtrack_helper(self, depth_temp, player, DEPTH):
         pass
 
     def medium_algorithm(self):
@@ -101,7 +185,10 @@ class AI:
             raise NoPossibleMovesAI
         #
         # return a random of possible choices
-        return self.instant_algorithm()
+        if timeout == AI.INSTANT_ALGORITHM_TIMEOUT:
+            return self.instant_algorithm()
+        if timeout == AI.FAST_ALGORITHM_TIMEOUT:
+            return self.fast_algorithm()
 
     def get_last_found_move(self):
         pass

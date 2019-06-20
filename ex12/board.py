@@ -36,6 +36,9 @@ class Board:
         # In Python 1 is True and 0 is False
         self.__possible_moves = np.ones(Board.COLUMNS, dtype=np.bool)
 
+    def __str__(self):
+        return str(self.__board)
+
     @property
     def possible_moves(self):
         return self.__possible_moves
@@ -74,7 +77,8 @@ class Board:
         """
         Board.check_location(column=column)
         # Full column
-        if self.__board[0, column] != 0:
+        # print(self.__board[0, column])
+        if self.__board[0, column] != Board.EMPTY:
             return Board.FAILED, Board.NOT_FOUND, Board.NOT_FOUND
         # Scan the column
         x, y = self.find_first_non_empty(column)
@@ -241,3 +245,20 @@ class Board:
         total_eval += Board.sum_possibilities(secondry_slant, pivot_index, player)
 
         return total_eval
+
+    @staticmethod
+    def flip_color(current_turn):
+        """
+        Change the color
+        :return:
+        """
+        if current_turn == Board.WHITE:
+            return Board.BLACK
+        if current_turn == Board.BLACK:
+            return Board.WHITE
+
+    def you_can_add_two_or_more_disk(self, column):
+        if self.__board[1, column] != Board.EMPTY:
+            return False
+        return True
+

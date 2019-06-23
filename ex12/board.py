@@ -258,6 +258,12 @@ class Board:
         return Board.NOT_FOUND
 
     def get_winning_tuple_coordinate(self, x, y):
+        """
+        Given X,Y coordinate they return a winning
+        :param x:
+        :param y:
+        :return:
+        """
         return self.get_coordinate_tuple_winning_in_point(x, y, 4)
 
     def get_coordinate_tuple_winning_in_point(self, x, y, sequence):

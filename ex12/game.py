@@ -2,6 +2,7 @@ import numpy as np
 import functools
 from ex12.board import Board
 
+
 class Game:
     GAME_IN_PROGRESS = None
     WHITE_WINS = 1
@@ -12,8 +13,13 @@ class Game:
         self.__current_turn = Board.WHO_GO_FIRST
         self.__winner = Board.GAME_IN_PROGRESS
         self.__board_instance = Board()
+        self.winning_coordinate = Game.GAME_IN_PROGRESS
         # Boolean list which start at true
         # In Python 1 is True and 0 is False
+
+    @property
+    def winning_coordinate(self):
+        return self.winning_coordinate
 
     def is_game_over(self):
         if self.__winner != Board.GAME_IN_PROGRESS:
@@ -54,6 +60,7 @@ class Game:
         self.__board_instance.update_possible_moves()
 
         self.__winner = self.__board_instance.check_win_in_point(x, y, self.__current_turn)
+        self.winning_coordinate = self.__board_instance.get_winning_tuple_coordinate(self, x, y)
 
         if self.__board_instance.check_if_draw():
             self.__winner = Board.TIE

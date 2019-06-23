@@ -533,7 +533,9 @@ class GamePage(tk.Frame):
         """This is what happened when the game is over. it calls the
         animation and shows a messagebox that tells who wins and if the
         player wants to play again"""
-        self.show_winning_circles(self.define_start_or_end((0,0),(0,3)))
+        first = self.game.winning_coordinate[0]
+        last = self.game.winning_coordinate[-1]
+        self.show_winning_circles(self.define_start_or_end(first,last))
         self.delete_turn()
         if player == WHITE:
             text = "PLAYER 1, YOU WON! \n\nwant to play again?"

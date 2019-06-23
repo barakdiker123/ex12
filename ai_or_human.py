@@ -1,5 +1,5 @@
 from screen import *
-from game import *
+from ex12.game import *
 
 class AIorHuman:
 

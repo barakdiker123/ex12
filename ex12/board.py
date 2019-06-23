@@ -181,6 +181,116 @@ class Board:
             return True
         return False
 
+    def find_coordinate_column(self, x, y):
+        "return the coordinate of all points in same column"
+        arr = []
+        for i in range(Board.ROWS):
+            arr.append((i, y))
+        return arr  # , x
+
+    def find_coordinate_row(self, x, y):
+        "return the coordinate of all points in same row"
+        arr = []
+        for i in range(Board.COLUMNS):
+            arr.append((x, i))
+        return arr  # , y
+
+    def find_coordinate_main_slant(self, x, y):
+        """
+        Returns the coordinate of the main slant
+        :param x:
+        :param y:
+        :return:
+        """
+        pivot_index = 0
+        arr = []
+        index_x = x
+        index_y = y
+        while Board.is_in_board(index_x, index_y):
+            arr.append((index_x, index_y))
+            index_x += 1
+            index_y += 1
+
+        index_x = x - 1
+        index_y = y - 1
+        while Board.is_in_board(index_x, index_y):
+            arr.insert(0, (index_x, index_y))
+            index_x -= 1
+            index_y -= 1
+            pivot_index += 1
+        return arr  # , pivot_index
+
+    def find_coordinate_secondary_slant(self, x, y):
+        pivot_index = 0
+        arr = []
+        index_x = x
+        index_y = y
+        while Board.is_in_board(index_x, index_y):
+            arr.append((index_x, index_y))
+            index_x += 1
+            index_y -= 1
+
+        index_x = x - 1
+        index_y = y + 1
+        while Board.is_in_board(index_x, index_y):
+            arr.insert(0, (index_x, index_y))
+            index_x -= 1
+            index_y += 1
+            pivot_index += 1
+        return arr  # , pivot_index
+
+    def find_four_via_coordinate_tuple(self, tuple_of_coordinate, player, sequence):
+        "sequence variable is for finding an connect of 4 or connect of 3 "
+        if len(tuple_of_coordinate) < sequence:
+            return Board.NOT_FOUND
+        lst_of_connected_four = []
+        count = 0
+        for (i, j), (x, y) in zip(tuple_of_coordinate, tuple_of_coordinate[1:]):
+            if self.__board[i, j] != self.__board[x, y] or self.__board[i, j] != player:
+                lst_of_connected_four = []
+                count = 0
+            else:
+                count += 1
+                lst_of_connected_four.append((i, j))
+                if count == sequence - 1:
+                    lst_of_connected_four.append((x, y))
+                    return lst_of_connected_four
+        return Board.NOT_FOUND
+
+    def get_winning_tuple_coordinate(self, x, y):
+        return self.get_coordinate_tuple_winning_in_point(x, y, 4)
+
+    def get_coordinate_tuple_winning_in_point(self, x, y, sequence):
+        """
+        This function returns the winning tuple
+        :param x:
+        :param y:
+        :param sequence:
+        :return: winning coordinate tuple or Board.NOT_FOUND
+        """
+        for player in (Board.WHITE, Board.BLACK):
+            arr = self.find_coordinate_column(x, y)
+            winning_sequence = self.find_four_via_coordinate_tuple(arr, player, sequence)
+            if winning_sequence != Board.NOT_FOUND:
+                return winning_sequence
+
+            arr = self.find_coordinate_row(x, y)
+            winning_sequence = self.find_four_via_coordinate_tuple(arr, player, sequence)
+            if winning_sequence != Board.NOT_FOUND:
+                return winning_sequence
+
+            arr = self.find_coordinate_main_slant(x, y)
+            winning_sequence = self.find_four_via_coordinate_tuple(arr, player, sequence)
+            if winning_sequence != Board.NOT_FOUND:
+                return winning_sequence
+
+            arr = self.find_coordinate_secondary_slant(x, y)
+            winning_sequence = self.find_four_via_coordinate_tuple(arr, player, sequence)
+            if winning_sequence != Board.NOT_FOUND:
+                return winning_sequence
+
+        return Board.NOT_FOUND
+
     @staticmethod
     def sum_possibilities(data, important_index, player):
 

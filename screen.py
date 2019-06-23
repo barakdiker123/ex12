@@ -1,8 +1,8 @@
 import tkinter as tk
 import tkinter.messagebox
-from game import *
+from ex12.game import *
 import numpy as np
-from ai import *
+from ex12.ai import *
 from ai_or_human import *
 
 LARGE_FONT = ("Verdana bold", 24)
@@ -368,10 +368,10 @@ class GamePage(tk.Frame):
 
 
     def check_turn(self):
-        if self.controller.game.get_current_player() == WHITE:
-            return WHITE
-        if self.controller.game.get_current_player() == BLACK:
-            return BLACK
+        if self.controller.game.get_current_player() == Game.WHITE:
+            return Game.WHITE
+        if self.controller.game.get_current_player() == Game.BLACK:
+            return Game.BLACK
 
 
     def TIE_massage(self):

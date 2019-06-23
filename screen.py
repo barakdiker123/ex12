@@ -4,38 +4,53 @@ from ex12.game import *
 import numpy as np
 from ex12.ai import *
 from ai_or_human import *
+from board import *
+import random
 
 LARGE_FONT = ("Verdana bold", 24)
 MEDIUM_FONT = ("Verdana bold", 18)
 SMALL_FONT = ("Verdana bold", 14)
 
+#################################################
+#CANT FIGURE OUT WHY BLACK COME FIRST
+#################################################
+
 WHITE = 1
 BLACK = 2
+
+COLUMNS = 7
+
+HUMAN_VS_HUMAN = 10
+HUMAN_VS_AI = 20
+AI_VS_HUMAN = 30
+AI_VS_AI = 40
 
 
 class Screen(tk.Tk):
 
     def __init__(self, game):
         tk.Tk.__init__(self)
-        container = tk.Frame(self)
-        container.pack(fill="both")
-        container_2 = tk.Frame(self)
-        container_2.pack(fill="both")
+        self.container = tk.Frame(self)
+        self.container.pack(fill="both")
         self.geometry("700x700")
-        container.grid_rowconfigure(0, weight=1)
-        container.grid_columnconfigure(0, weight=1)
+        self.container.grid_rowconfigure(0, weight=1)
+        self.container.grid_columnconfigure(0, weight=1)
         self.main_color_dict = {"COLOR_1": "white", "COLOR_2": "black"}
+        self.counter_dict = {"AI_1": False, "AI_2": False}
         self.frames = {}
         for page in (GamePage, StartPage):
-            frame = page(container, self)
+            frame = page(self.container, self, self.counter_dict["AI_1"], self.counter_dict["AI_2"])
             self.frames[page] = frame
             frame.grid(row=0, column=0, sticky="nsew")
             self.show_frame(page)
         self.game = game
-        self.ai = AI(self.game, self.game.get_current_player())
-        self.ai_human = AIorHuman()
 
 
+    def main_color_dict(self):
+        return self.main_color_dict
+
+    def get_container(self):
+        return self.container
 
 
     def show_frame(self, cont):
@@ -49,231 +64,329 @@ class Screen(tk.Tk):
 
 class StartPage(tk.Frame):
 
-    def __init__(self, parent, controller):
+    def __init__(self, parent, controller, AI_1, AI_2):
         tk.Frame.__init__(self, parent)
         self.controller = controller
-        self.welcome_msg = tk.Label(self, text="\nWelcome to", font=MEDIUM_FONT, bg="orange2")
-        self.welcome_msg.pack()
-        self.label = tk.Label(self, text="CONNECT FOUR\n", font=LARGE_FONT, bg="orange2", fg="medium blue")
-        self.label.pack()
-        self.menu_title = tk.Label(self, text="Choose how you want to play:\n\n", font=SMALL_FONT, bg="orange2")
-        self.menu_title.pack()
-        self.player_one_label = tk.Label(self, text="Player 1\n", font=MEDIUM_FONT, bg="orange2").place(x=100, y=200)
-        self.human_button_1 = tk.Button(self, text="Human player", bg="medium blue", fg="white",
-                                        command=lambda: self.change_button_color_human(self.human_button_1))
-        self.human_button_1.place(x=110, y=250)
-        self.ai_button_1 = tk.Button(self, text="AI player", bg="red3",
-                                     command=lambda: self.change_button_color_ai(self.ai_button_1))
-        self.ai_button_1.place(x=123, y=280)
-        self.empty_label_1 = tk.Label(self, bg="orange2", text="\n")
-        self.empty_label_1.pack()
-        self.player_two_label = tk.Label(self, text="Player 2\n", font=MEDIUM_FONT, bg="orange2").place(x=480, y=200)
-        self.human_button_2 = tk.Button(self, text="Human player", bg="medium blue", fg="white",
-                                        command=lambda: self.change_button_color_human(self.human_button_2))
-        self.human_button_2.place(x=490, y=250)
-        self.ai_button_2 = tk.Button(self, text="AI player", bg="red3",
-                                     command=lambda: self.change_button_color_ai(self.ai_button_2))
-        self.ai_button_2.place(x=503, y=280)
-        self.empty_label_2 = tk.Label(self, bg="orange2", text="\n\n\n\n\n").pack()
-        self.choose_color = tk.Label(self, bg="orange2", text="Please choose one colour for each player:\n\n\n\n\n\n",
-                                     font=SMALL_FONT).pack()
-        self.white = tk.Button(self, bg="antique white", text="white",
-                               command=lambda: self.choose_color_1(self.white, "antique white"))
-        self.white.place(x=96, y=420)
-        self.red = tk.Button(self, bg="red", text="red", command=lambda: self.choose_color_1(self.red, "red"))
-        self.red.place(x=141, y=420)
-        self.green = tk.Button(self, bg="green4", text="green",
-                               command=lambda: self.choose_color_1(self.green, "green4"))
-        self.green.place(x=174, y=420)
-        self.black = tk.Button(self, bg="black", fg="white", text="black",
-                               command=lambda: self.choose_color_2(self.black, "black"))
-        self.black.place(x=476, y=420)
-        self.yellow = tk.Button(self, bg="orange", text="yellow",
-                                command=lambda: self.choose_color_2(self.yellow, "orange"))
-        self.yellow.place(x=520, y=420)
-        self.pink = tk.Button(self, bg="deep pink2", text="pink",
-                              command=lambda: self.choose_color_2(self.pink, "deep pink2"))
-        self.pink.place(x=570, y=420)
-        self.play_button = tk.Button(self, text="PLAY", bg="red", font="bold", width=10, command=self.if_play_pressed)
-        self.play_button.pack()
-        self.configure(bg="orange2")
-        self.counter_dict = {self.ai_button_1: 0, self.ai_button_2: 0, self.human_button_1: 0, self.human_button_2: 0}
-        self.counter_dict_2 = {self.ai_button_1: "ai_player_1", self.ai_button_2: "ai_player_2",
-                               self.human_button_1: "human_player_1", self.human_button_2: "human_player_2"}
+        self.parent = parent
+        self.create_main_menu()
+        self.counter_dict = {self.ai_button_1: False, self.ai_button_2: False}
+        self.main_color_dict = {"COLOR_1": "white", "COLOR_2": "black"}
         self.color_dict_1 = {self.white: 0, self.red: 0, self.green: 0}
         self.color_dict_2 = {self.black: 0, self.yellow: 0, self.pink: 0}
         self.color_dict = {self.white: "antique white", self.red: "red", self.green: "green4", self.black: "black",
                            self.yellow: "orange", self.pink: "deep pink2"}
 
+
+    def create_main_menu(self):
+        """This function creates main menu"""
+
+        self.canvas = tk.Canvas(self, height=700, widt=700, bg="orange2")
+        self.canvas.pack()
+        self.welcome_msg = self.canvas.create_text(340, 50, text="\nWelcome to", font=MEDIUM_FONT)
+        self.welcome_msg_blue = self.canvas.create_text(340, 120, text="CONNECT FOUR\n", font=LARGE_FONT,
+                                                        fill="medium blue")
+        self.menu_title = self.canvas.create_text(350, 185, text="Choose how you want to play:\n\n", font=SMALL_FONT)
+
+        self.player_one = self.canvas.create_text(160, 230, text="Player 1\n", font=MEDIUM_FONT)
+        self.human_button_1 = tk.Button(self, text="Human player", bg="medium blue", fg="white",
+                                        command=lambda: self.change_button_color_human_1(self.human_button_1))
+        self.human_button_1_window = self.canvas.create_window(155, 263, window=self.human_button_1)
+        self.ai_button_1 = tk.Button(self, text="AI player", bg="red3",
+                                     command=lambda: self.change_button_color_ai_1(self.ai_button_1))
+        self.ai_button_1_window = self.canvas.create_window(153, 300, window=self.ai_button_1)
+
+        self.player_two = self.canvas.create_text(540, 230, text="Player 2\n", font=MEDIUM_FONT)
+        self.human_button_2 = tk.Button(self, text="Human player", bg="medium blue", fg="white",
+                                        command=lambda: self.change_button_color_human_2(self.human_button_2))
+        self.human_button_2_window = self.canvas.create_window(540, 263, window=self.human_button_2)
+        self.ai_button_2 = tk.Button(self, text="AI player", bg="red3",
+                                     command=lambda: self.change_button_color_ai_2(self.ai_button_2))
+        self.ai_button_2_window = self.canvas.create_window(540, 300, window=self.ai_button_2)
+        self.choose_color = self.canvas.create_text(350, 440, text="Please choose one colour for each player:\n\n\n\n\n\n",
+                                                    font=SMALL_FONT)
+        self.create_color_buttons()
+        play_button = tk.Button(self, text="PLAY", bg="red", font="bold", width=10,
+                                command=lambda: self.if_play_pressed())
+        play_button_window = self.canvas.create_window(287, 510, window=play_button)
+
+
     def choose_ai_or_human_player(self):
-        results = []
-        for player in self.counter_dict:
-            if self.counter_dict[player] == 1:
-                results.append(self.counter_dict_2[player])
-        return results
+        """
+        This function checks which button was pressed, and returns True/None
+        True for AI, None for human.
+        :return: True/None
+        """
+        if self.counter_dict[self.ai_button_1] == True:
+            self.controller.counter_dict["AI_1"] = True
+        else:
+            self.controller.counter_dict["AI_1"] = None
+        if self.counter_dict[self.ai_button_2] == True:
+            self.controller.counter_dict["AI_2"] = True
+        else:
+            self.controller.counter_dict["AI_2"] = None
 
 
-    def change_button_color_ai(self, button):
+    def change_button_color_ai_1(self, button):
         """
         This method changes the color of the button user choose
         """
-        if not self.counter_dict[button] % 2:
+        if self.counter_dict[button] == False:
             button.configure(bg="white", fg="black")
-        else:
-            button.config(bg="red3")
-        self.counter_dict[button] += 1
+            self.counter_dict[button] = True
+        elif self.counter_dict[button] == None:
+            button.configure(bg="white", fg="black")
+            self.human_button_1.configure(bg="medium blue", fg="white")
+            self.counter_dict[button] = True
 
-    def change_button_color_human(self, button):
+
+    def change_button_color_ai_2(self, button):
         """
         This method changes the color of the button user choose
         """
-        if not self.counter_dict[button] % 2:
+        if self.counter_dict[button] == False:
             button.configure(bg="white", fg="black")
-        else:
-            button.config(bg="medium blue", fg="white")
-        self.counter_dict[button] += 1
+            self.counter_dict[button] = True
+        elif self.counter_dict[button] == None:
+            button.configure(bg="white", fg="black")
+            self.human_button_2.configure(bg="medium blue", fg="white")
+            self.counter_dict[button] = True
+
+
+    def change_button_color_human_1(self, button):
+        """
+        This method changes the color of the button user choose
+        """
+        if self.counter_dict[self.ai_button_1] == False:
+            button.configure(bg="white", fg="black")
+            self.counter_dict[self.ai_button_1] = None
+        elif self.counter_dict[self.ai_button_1] == True:
+            button.configure(bg="white", fg="black")
+            self.ai_button_1.config(bg="red3")
+            self.counter_dict[self.ai_button_1] = None
+
+
+    def change_button_color_human_2(self, button):
+        """
+        This method changes the color of the button user choose
+        """
+        if self.counter_dict[self.ai_button_2] == False:
+            button.configure(bg="white", fg="black")
+            self.counter_dict[self.ai_button_2] = None
+
+        if self.counter_dict[self.ai_button_2] == True:
+            button.configure(bg="white", fg="black")
+            self.ai_button_2.configure(bg="red3")
+            self.counter_dict[self.ai_button_2] = None
+
+
+
 
     def if_play_pressed(self):
         """
         This method controls what happens when a user presses "play" button.
         """
-        if self.counter_dict[self.human_button_1] % 2 and self.counter_dict[self.ai_button_1] % 2:
-            tkinter.messagebox.showinfo("ERROR", "You can choose either human or AI player, not both")
-        elif self.counter_dict[self.human_button_2] % 2 and self.counter_dict[self.ai_button_2] % 2:
-            tkinter.messagebox.showinfo("ERROR", "You can choose either human or AI player, not both")
-        elif not self.counter_dict[self.human_button_1] % 2 and not self.counter_dict[self.ai_button_1] % 2:
+
+        if self.counter_dict[self.ai_button_1] == False:
             tkinter.messagebox.showinfo("ERROR", "You have to choose an option for player 1")
-        elif not self.counter_dict[self.human_button_2] % 2 and not self.counter_dict[self.ai_button_2] % 2:
+        elif self.counter_dict[self.ai_button_2] == False:
             tkinter.messagebox.showinfo("ERROR", "You have to choose an option for player 2")
         else:
             self.color_chosen(self.color_dict_1, "white", "COLOR_1")
             self.color_chosen(self.color_dict_2, "black", "COLOR_2")
-            self.controller.ai_human.AI_or_human(self.choose_ai_or_human_player())
+            self.choose_ai_or_human_player()
+            GamePage(self.parent, self.controller, AI_1=self.controller.counter_dict["AI_1"], AI_2=self.controller.counter_dict["AI_2"])
             self.controller.show_frame(GamePage)
-            return True
 
 
-    def choose_color_1(self, button, color):
-        if not self.color_dict_1[button] % 2:
-            button.configure(bg="white", fg="black")
-            self.color_dict_1[button] = 1
-        else:
-            button.config(bg=color)
-            self.color_dict_1[button] = 0
+        # TEST FOR CHOOSING PLAYERS
+        for key in self.counter_dict:
+            if self.counter_dict[key] == True:
+                print(key, self.counter_dict[key])
+            else:
+                print(key, self.counter_dict[key])
+        # TEST FOR CHOOSINT COLOR
+        for key, val in self.color_dict_1.items():
+            if val == 1:
+                print(self.color_dict[key])
+        for key, val in self.color_dict_2.items():
+            if val == 1:
+                print(self.color_dict[key])
 
-    def color_chosen(self, color_dict_num, defult_color, change):
-        for button in color_dict_num:
-            if color_dict_num[button] == 1:
-                self.controller.main_color_dict[change] = self.color_dict[button]
-            if all(value == 0 for value in color_dict_num.values()):
-                self.controller.main_color_dict[change] = defult_color
-        rev_dict = {}
-        for key, value in color_dict_num.items():
-            rev_dict.setdefault(value, set()).add(key)
-        result = [key for key, values in rev_dict.items()
-                  if len(values) > 1]
-        if result == [1]:
-            if color_dict_num == self.color_dict_1:
-                tkinter.messagebox.showinfo("Notice",
-                                            "You chose more than one color for Player 1,\nso the pogram will choose one of them for you")
-            if color_dict_num == self.color_dict_2:
-                tkinter.messagebox.showinfo("Notice",
-                                            "You chose more than one color for Player 2,\nso the pogram will choose one of them for you")
+        ###############################################################################
+        # COLOR RELATED FITCHERS
+        ###############################################################################
 
-    def choose_color_2(self, button, color):
+
+    def create_color_buttons(self):
+        """This function creates color buttons for the main menu"""
+        self.white = tk.Button(self, bg="antique white", text="white",
+                               command=lambda: self.choose_white(self.white, "antique white"))
+
+        self.white_window = self.canvas.create_window(116, 432, window=self.white)
+        self.red = tk.Button(self, bg="red", text="red", command=lambda: self.choose_red(self.red, "red"))
+        self.red_window = self.canvas.create_window(155, 432, window=self.red)
+        self.green = tk.Button(self, bg="green4", text="green",
+                               command=lambda: self.choose_green(self.green, "green4"))
+        self.green_window = self.canvas.create_window(194, 432, window=self.green)
+        self.black = tk.Button(self, bg="black", fg="white", text="black",
+                               command=lambda: self.choose_black(self.black, "black"))
+        self.black_window = self.canvas.create_window(495, 432, window=self.black)
+        self.yellow = tk.Button(self, bg="orange", text="yellow",
+                                command=lambda: self.choose_yellow(self.yellow, "orange"))
+        self.yellow_window = self.canvas.create_window(542, 432, window=self.yellow)
+        self.pink = tk.Button(self, bg="deep pink2", text="pink",
+                              command=lambda: self.choose_pink(self.pink, "deep pink2"))
+        self.pink_window = self.canvas.create_window(587, 432, window=self.pink)
+
+
+    def choose_black(self, button, color):
         if not self.color_dict_2[button] % 2:
             button.configure(bg="white", fg="black")
+            self.yellow.configure(bg="orange")
+            self.pink.configure(bg="deep pink2")
+            self.color_dict_2[self.yellow] = 0
+            self.color_dict_2[self.pink] = 0
             self.color_dict_2[button] = 1
-        else:
-            button.config(bg=color)
-            self.color_dict_2[button] = 0
+
+
+    def choose_yellow(self, button, color):
+        if not self.color_dict_2[button] % 2:
+            button.configure(bg="white", fg="black")
+            self.black.configure(bg="black", fg="white")
+            self.pink.configure(bg="deep pink2")
+            self.color_dict_2[self.black] = 0
+            self.color_dict_2[self.pink] = 0
+            self.color_dict_2[button] = 1
+
+
+    def choose_pink(self, button, color):
+        if not self.color_dict_2[button] % 2:
+            button.configure(bg="white", fg="black")
+            self.yellow.configure(bg="orange")
+            self.black.configure(bg="black", fg="white")
+            self.color_dict_2[self.yellow] = 0
+            self.color_dict_2[self.black] = 0
+            self.color_dict_2[button] = 1
+
+
+    def choose_white(self, button, color):
+        if not self.color_dict_1[button] % 2:
+            button.configure(bg="white", fg="black")
+            self.red.configure(bg="red")
+            self.green.configure(bg="green4")
+            self.color_dict_1[self.green] = 0
+            self.color_dict_1[self.red] = 0
+            self.color_dict_1[button] = 1
+
+
+    def choose_red(self, button, color):
+        if not self.color_dict_1[button] % 2:
+            button.configure(bg="white", fg="black")
+            self.white.configure(bg="antique white")
+            self.green.configure(bg="green4")
+            self.color_dict_1[self.green] = 0
+            self.color_dict_1[self.white] = 0
+            self.color_dict_1[button] = 1
+
+
+    def choose_green(self, button, color):
+        if not self.color_dict_1[button] % 2:
+            button.configure(bg="white", fg="black")
+            self.red.configure(bg="red")
+            self.white.configure(bg="antique white")
+            self.color_dict_1[self.white] = 0
+            self.color_dict_1[self.red] = 0
+            self.color_dict_1[button] = 1
+
+
+    def color_chosen(self, color_dict_num, defult_color, change):
+        for key, val in color_dict_num.items():
+            if val == 1:
+                self.controller.main_color_dict[change] = self.color_dict[key]
+            if all(value == 0 for value in color_dict_num.values()):
+                self.controller.main_color_dict[change] = defult_color
+        # rev_dict = {}
+        # for key, value in color_dict_num.items():
+        #     rev_dict.setdefault(value, set()).add(key)
+        # result = [key for key, values in rev_dict.items()
+        #           if len(values) > 1]
+
+
+###############################################################################
+#GAMEPAGE
+###############################################################################
+
 
 
 class GamePage(tk.Frame):
-    num_of_columns = 7
-    num_of_rows = 7
-    WHITE = 1
-    BLACK = 2
 
-    def __init__(self, parent, controller):
+
+    def __init__(self, parent, controller, AI_1=False, AI_2=False):
         tk.Frame.__init__(self, parent)
         self.controller = controller
         self.parent = parent
-        self.make_move_value = True
-        self.canvas = tk.Canvas(self, height=700, widt=700)
+        self.AI_1 = AI_1
+        self.AI_2 = AI_2
+        self.game = Game()
+        self.canvas = tk.Canvas(self, height=700, widt=700, bg="grey")
         self.canvas.pack()
-        button1 = tk.Button(self, text="Quit", command=self.quit_button, anchor="w")
-        button1.configure(width=10, activebackground="red")
-        button1_window = self.canvas.create_window(10, 10, anchor="nw", window=button1)
-        button2 = tk.Button(self, text="Main menu", command=self.main_menu_buton, anchor="w")
-        button2.configure(width=10, activebackground="blue")
-        button2_window = self.canvas.create_window(100, 10, anchor="nw", window=button2)
-        button3 = tk.Button(self, text="Help", command=self.help_button, anchor="w")
-        button3.configure(width=10, activebackground="blue")
-        button3_window = self.canvas.create_window(190, 10, anchor="nw", window=button3)
-        self.player_1 = tk.Label(self, text="Player 1:", font=MEDIUM_FONT, bg="grey",
-                                 fg=self.controller.main_color_dict["COLOR_1"]).place(x=50, y=50)
-        self.player_1 = tk.Label(self, text="Player 2:", font=MEDIUM_FONT, bg="grey",
-                                 fg=self.controller.main_color_dict["COLOR_2"]).place(x=350, y=50)
-        # self.disc_canvas = tk.Canvas(self)
-        # self.disc_canvas.pack()
-        # self.canvas.bind("<Button-1>", self.callback)
-        #self.canvas.bind("<Motion>", self.ai_or_human)
-
-        self.board = self.canvas.create_rectangle(1, 700, 700, 100, fill="blue4")
-        self.outside = self.canvas.create_rectangle(1, 100, 700, 1, fill="grey")
-        self._draw_holes()
-        self.val = 0
+        self.make_move_value = True
+        self.create_game_screen()
         self.checkers_lst = []
-        self.turn_lst = []
-        self.show_turn()
-        self.control_game()
+
+        self.who_vs_who()
+        self.canvas.bind("<Button-1>", self.return_column)
+        if AI_1 == True and AI_2 == True:
+            self.AI_move()
 
 
 
-    # def who_vs_who(self):
-    #     player_dict_1 = self.controller.ai_human.get_dict_1()
-    #     player_dict_2 = self.controller.ai_human.get_dict_2()
-    #     if self.check_turn() == WHITE:
-    #         for key in player_dict_1:
-    #             if player_dict_1[key] == 1:
-    #                 return key
-    #     else:
-    #         for key in player_dict_2:
-    #             if player_dict_2[key] == 1:
-    #                 return key
-
-
-    def control_game(self):
-        if self.check_turn() == WHITE:
-            if self.controller.ai_human.get_player_1() == "human_player_1":
-                self.canvas.bind("<Button-1>", self.return_location)
-            elif self.make_move_value == True:
-                self.player_move(self.controller.game.make_move(self.controller.ai.find_legal_move(AI.FAST_ALGO)))
-        if self.check_turn() == BLACK:
-            if self.controller.ai_human.get_player_2() == "human_player_2":
-                self.canvas.bind("<Button-1>", self.return_location)
-            elif self.make_move_value == True:
-                self.player_move(self.controller.game.make_move(self.controller.ai.find_legal_move(AI.FAST_ALGO)))
+    def who_vs_who(self): #callback
+        """This is a callback mathod"""
+        if self.AI_1 == None and self.AI_2 == None:
+            print("human_vs_human")
+            return HUMAN_VS_HUMAN
+        if self.AI_1 == None and self.AI_2 == True:
+            print("human_vs_AI")
+            return HUMAN_VS_AI
+        if self.AI_1 == True and self.AI_2 == None:
+            print("AI vs human")
+            return AI_VS_HUMAN
+        if self.AI_1 == True and self.AI_2 == True:
+            print("AI VS AI")
+            return AI_VS_AI
 
 
 
+    ###############################################################################
+    # CREATE GAME SCREEN
+    ###############################################################################
 
 
-    def show_turn(self):
-        if self.val % 2 == 0:
-            for turn in self.turn_lst:
-                self.turn_lst.remove(turn)
-            self.turn_lst.append(tk.Label(self, text="It's your turn!", font=SMALL_FONT, bg="grey").place(x=180, y=55))
-        if self.val % 2 != 0:
-            for turn in self.turn_lst:
-                self.turn_lst.remove(turn)
-            self.turn_lst.append(tk.Label(self, text="It's your turn!", font=SMALL_FONT, bg="grey").place(x=380, y=55))
+    def create_game_screen(self):
+        """This method draws the game screen"""
+        self.board = self.canvas.create_rectangle(1, 700, 700, 100, fill="blue4", tag="board")
+        self._draw_holes()
+        self.create_game_screen_buttons()
+
+
+
+    def create_game_screen_buttons(self):
+        self.button1 = tk.Button(self, text="Quit", command=self.quit_button, anchor="w")
+        self.button1.configure(width=10, activebackground="red")
+        self.button1_window = self.canvas.create_window(10, 10, anchor="nw", window=self.button1)
+        self.button2 = tk.Button(self, text="Main menu", command=self.main_menu_buton, anchor="w")
+        self.button2.configure(width=10, activebackground="blue")
+        self.button2_window = self.canvas.create_window(100, 10, anchor="nw", window=self.button2)
+        self.button3 = tk.Button(self, text="Help", command=self.help_button, anchor="w")
+        self.button3.configure(width=10, activebackground="blue")
+        self.button3_window = self.canvas.create_window(190, 10, anchor="nw", window=self.button3)
+
 
     def quit_button(self):
         msg = tkinter.messagebox.askquestion("QUIT", "Are you sure you want to quit?")
         if msg == "yes":
-            self.controller.destroy()
+            self.destroy()
         else:
             return
 
@@ -283,7 +396,7 @@ class GamePage(tk.Frame):
         if msg == "yes":
             for checker in self.checkers_lst:
                 self.canvas.delete(checker)
-            self.controller.game = Game()
+            self.game = Game()
             self.controller.show_frame(StartPage)
         else:
             return
@@ -308,15 +421,48 @@ class GamePage(tk.Frame):
                 self.hole = self.canvas.create_oval(9 + i, 560 - j, 90 + i, 640 - j, fill="grey")
 
 
-    def callback(self, event):
-        """
-        This method prints the col and the row of circle in the board
-        """
-        col_width = self.canvas.winfo_width() / self.num_of_columns
-        row_height = self.canvas.winfo_height() / self.num_of_rows
+    ###############################################################################
+    # HUMAN VS HUMAN
+    ###############################################################################
+
+
+    def return_column(self, event):
+        """This method is activated when a human player is chosen"""
+        col_width = self.canvas.winfo_width() / COLUMNS
+        # row_height = self.canvas.winfo_height() / self.num_of_rows
         col = int(event.x // col_width)
-        row = int(event.y // row_height)
-        print("col:" + str(col) + "," + "row:" + str(row - 1))
+        # row = int(event.y // row_height)
+        try:
+            if self.controller.counter_dict["AI_1"] == None and self.controller.counter_dict["AI_2"] == None:
+                print("H")
+                if self.make_move_value == True:
+                    self.player_move(self.game.make_move(col))
+            if self.controller.counter_dict["AI_1"] == None and self.controller.counter_dict["AI_2"] == True:
+                print("HA")
+                if self.make_move_value == True:
+                    if self.check_turn() == WHITE:
+                        self.playe_move(self.game.make_move(col))
+                    else:
+                        self.AI_move(self.game.make_move(random.randint(0,7)))
+            if self.controller.counter_dict["AI_1"] == True and self.controller.counter_dict["AI_2"] == None:
+                self.AI_vs_Human()
+            else:
+                print("A")
+                self.AI_move(random.randint(0, 7))
+
+        except Exception:
+            return
+
+
+    def AI_vs_Human(self):
+        print("AH")
+        if self.make_move_value == True:
+            while self.check_turn() == BLACK:
+                self.playe_move(self.game.make_move(col))
+            while self.check_turn() == WHITE:
+                self.AI_move()
+
+
 
     def player_move(self, tuple):
         """
@@ -327,45 +473,68 @@ class GamePage(tk.Frame):
         j = y * 90
         if y == -1:
             return
+
         elif self.check_turn() == WHITE:
             self.checkers_lst.append(self.canvas.create_oval(9 + i, 110 + j, 90 + i, 190 + j,
                                                              fill=self.controller.main_color_dict["COLOR_1"]))
-            self.val += 1
+            self.check_winner()
+            return
+
         elif self.check_turn() == BLACK:
             self.checkers_lst.append(self.canvas.create_oval(9 + i, 110 + j, 90 + i, 190 + j,
                                                              fill=self.controller.main_color_dict["COLOR_2"]))
-            self.val += 1
-        self.check_winner()
+            self.check_winner()
+            return
 
-    def return_location(self,event):
+
+
+
+    def AI_move(self):
         """
-        This method returns the location of the mouse in the board as a tuple.
-        The numbers represents the location in the matrix this cell is.
+        This method is in charge of  a single move in the game.
         """
-        col_width = self.canvas.winfo_width() / self.num_of_columns
-        # row_height = self.canvas.winfo_height() / self.num_of_rows
-        col = int(event.x // col_width)
-        # row = int(event.y // row_height)
-        if self.make_move_value == True:
-            #if self.who_vs_who() == "human_player_1" or self.who_vs_who() == "human_player_2":
-                self.player_move(self.controller.game.make_move(col))
+        while self.check_winner() == Game.GAME_IN_PROGRESS:
+            val = 0
+            while val < 5:
+                tuple = self.game.make_move(random.randint(0, 6))
+                print(tuple)
+                y, x = tuple
+                i = x * 100
+                j = y * 90
+                print(val)
+                val += 1
+            while val == 5:
+                if self.check_turn() == WHITE:
+                    self.checkers_lst.append(self.canvas.create_oval(9 + i, 110 + j, 90 + i, 190 + j,
+                                                                     fill=self.controller.main_color_dict["COLOR_1"]))
+
+                    val = 0
+
+
+                elif self.check_turn() == BLACK:
+                    self.checkers_lst.append(self.canvas.create_oval(9 + i, 110 + j, 90 + i, 190 + j,
+                                                                     fill=self.controller.main_color_dict["COLOR_2"]))
+                    val = 0
 
 
 
+
+        ###############################################################################
+        # METHODS FOR ALL PLAYERS
+        ###############################################################################
 
     def check_winner(self):
-        if self.controller.game.get_winner() == Game.TIE:
+        if self.game.get_winner() == Game.TIE:
             self.make_move_value = False
             self.TIE_massage()
-        if self.controller.game.get_winner() == Game.WHITE_WINS:
+        if self.game.get_winner() == Game.WHITE_WINS:
+            self.WIN_message("Player 1")
             self.make_move_value = False
-            return 1
-        if self.controller.game.get_winner() == Game.BLACK_WINS:
-            return 2
+        if self.game.get_winner() == Game.BLACK_WINS:
+            self.WIN_message("Player 2")
             self.make_move_value = False
-        if self.controller.game.get_winner() == Game.GAME_IN_PROGRESS:
+        if self.game.get_winner() == Game.GAME_IN_PROGRESS:
             self.make_move_value = True
-
 
     def check_turn(self):
         if self.controller.game.get_current_player() == Game.WHITE:
@@ -373,12 +542,6 @@ class GamePage(tk.Frame):
         if self.controller.game.get_current_player() == Game.BLACK:
             return Game.BLACK
 
-
-    def TIE_massage(self):
-        msg = tk.Message(self, text="IT'S A TIE!\nPlay again?", font=MEDIUM_FONT, bg="cyan")
-        #exit_button = tk.Button(self, text="Quit", command=quit())
-        #exit_button.pack()
-        msg.pack()
 
 
 

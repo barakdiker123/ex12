@@ -204,8 +204,9 @@ class StartPage(tk.Frame):
             self.color_chosen(self.color_dict_1, "white", "COLOR_1")
             self.color_chosen(self.color_dict_2, "black", "COLOR_2")
             self.choose_ai_or_human_player()
-            self.show_whos_playing()
             self.controller.show_frame(GamePage)
+            self.show_whos_playing()
+
 
 
     def show_whos_playing(self):
@@ -216,9 +217,9 @@ class StartPage(tk.Frame):
         if self.controller.counter_dict["AI_1"] == Screen.AI_PLAY and\
                 self.controller.counter_dict[
             "AI_2"] == Screen.AI_PLAY:
-            tkinter.messagebox.showinfo("INSTRUCTIONS",
-                    "Press any spot on the board to watch a single AI move")
             self.controller.get_frame(GamePage).its_ai_vs_ai(260, 560)
+            self.controller.get_frame(GamePage).ai_vs_ai()
+
         if self.controller.counter_dict["AI_1"] == Screen.AI_PLAY and\
                 self.controller.counter_dict[
             "AI_2"] == Screen.PLAYER_PLAY:
@@ -483,9 +484,6 @@ class GamePage(tk.Frame):
             if self.controller.counter_dict["AI_1"] == Screen.AI_PLAY and\
                     self.controller.counter_dict["AI_2"] == Screen.PLAYER_PLAY:
                 self.ai_vs_human(col)
-            if self.controller.counter_dict["AI_1"] == Screen.AI_PLAY and\
-                    self.controller.counter_dict["AI_2"] == Screen.AI_PLAY:
-                self.ai_vs_ai()
 
         except Exception:
             return
@@ -540,11 +538,12 @@ class GamePage(tk.Frame):
             ai = AI(self.game, WHITE)
             column_from_ai = ai.find_legal_move(AI.FAST_ALGORITHM_TIMEOUT)
             self.player_move(self.game.make_move(column_from_ai), "COLOR_1")
+            self.after(1000,self.ai_vs_ai)
         elif self.check_turn() == BLACK:
             ai = AI(self.game, BLACK)
             column_from_ai = ai.find_legal_move(AI.FAST_ALGORITHM_TIMEOUT)
             self.player_move(self.game.make_move(column_from_ai), "COLOR_2")
-
+            self.after(1000,self.ai_vs_ai)
 
 
     def player_move(self, tuple, color):
@@ -570,7 +569,7 @@ class GamePage(tk.Frame):
 
     def check_winner(self):
         """This method checks the state of the game"""
-        if self.game.get_winner() == TIE:  ###################################### NOTICe!!!! DOESNT WORK NOT SURE IF IN GAME RULES
+        if self.game.get_winner() == Game.TIE:
             self.WIN_message(TIE)
             return False
         if self.game.get_winner() == Game.WHITE_WINS:
@@ -597,15 +596,16 @@ class GamePage(tk.Frame):
         """This is what happened when the game is over. it calls the
         animation and shows a messagebox that tells who wins and if the
         player wants to play again"""
-        for i in range(4):
-            self.show_winning_seq(self.game.winning_coordinate[i])
+        if player == WHITE or player == BLACK:
+            for i in range(4):
+                self.show_winning_seq(self.game.winning_coordinate[i])
         if player == WHITE:
             text = "PLAYER 1, YOU WON! \n\nwant to play again?"
         if player == BLACK:
             text = "PLAYER 2, YOU WON! \n\nwant to play again?"
         if player == TIE:
-            text == "INCREDIBLE TIE! \n\nwant to play again?"
-        win_message = tkinter.messagebox.askquestion("WE HAVE A WINNER!", text)
+            text = "INCREDIBLE TIE! \n\nwant to play again?"
+        win_message = tkinter.messagebox.askquestion("Game over", text)
         self.delete_turn()
         self.delete_winning_four()
         [self.animation() for _ in range(7)]
@@ -640,7 +640,10 @@ class GamePage(tk.Frame):
 
 
     def animation(self):
-        """This is the animation that happens when a player wins or when its a tie"""
+        """
+        This is the animation that happens when a player wins or when its
+         a tie
+         """
         for checker in self.checkers_lst:
             self.canvas.move(checker, random.randint(-400, 400),
                                 random.randint(-400, 400))

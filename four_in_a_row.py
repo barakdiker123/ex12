@@ -1,10 +1,10 @@
 import tkinter as tk
 
-from ex12.ai import *
-from ex12.game import *
+from ai import *
+from game import *
 from screen import *
-from ex12.board import *
-
+from board import *
+#from try_gui import *
 
 class FourInRow:
 
@@ -18,6 +18,6 @@ class FourInRow:
 
 
 if __name__ == '__main__':
-    import pdb;pdb.set_trace()
-    four_in_a_row = FourInRow(Screen(Game()))
+    #root = tk.Tk()
+    four_in_a_row = FourInRow(Screen())
     four_in_a_row.run()

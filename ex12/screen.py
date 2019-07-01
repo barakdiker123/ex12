@@ -1,3 +1,11 @@
+#############################################################
+# FILE : Screen.py
+# WRITER : Noa Babliki, noa.babliki , 206090409
+# WRITER : Barak Diker, barakdiker, 313538225
+# EXERCISE : intro2cs ex12 2019-2018
+# DESCRIPTION: A game of connect four. enjoy!
+#############################################################
+
 import tkinter as tk
 import tkinter.messagebox
 from game import *
@@ -368,6 +376,7 @@ class GamePage(tk.Frame):
         self.last_ai_lst = []
         self.create_game_screen()
         self.canvas.bind("<Button-1>", self.return_column)
+        self.__check_winner = True
 
 
 ###############################################################################
@@ -511,7 +520,8 @@ class GamePage(tk.Frame):
         """
         if self.check_turn() == WHITE:
             self.player_move(self.game.make_move(col), "COLOR_1")
-
+        if not self.__check_winner:
+            return
         self.delete_last_ai()
         self.after(200, self.ai_black)
 
@@ -575,7 +585,7 @@ class GamePage(tk.Frame):
                 self.controller.counter_dict["AI_2"] == Screen.AI_PLAY:
             if self.check_turn() == WHITE:
                 self.show_last_ai(tuple)
-        self.check_winner()
+        self.__check_winner = self.check_winner()
         return
 
 
@@ -646,14 +656,15 @@ class GamePage(tk.Frame):
         elif self.controller.counter_dict["AI_1"] == Screen.AI_PLAY and\
                 self.controller.counter_dict[
             "AI_2"] == Screen.PLAYER_PLAY:
-            ai = AI(self.game, WHITE)
-            column_from_ai = ai.find_legal_move(AI.FAST_ALGORITHM_TIMEOUT)
-            self.player_move(self.game.make_move(column_from_ai), "COLOR_1")
             self.its_you_or_ai(220, 560)
         elif self.controller.counter_dict["AI_1"] == Screen.PLAYER_PLAY and\
                 self.controller.counter_dict[
             "AI_2"] == Screen.AI_PLAY:
-            self.its_you_or_ai(520, 260)
+            try:
+                self.return_column(self, event)
+                self.its_you_or_ai(520, 260)
+            except NameError:
+               self.its_you_or_ai(520, 260)
         elif self.controller.counter_dict["AI_1"] == Screen.AI_PLAY and\
                 self.controller.counter_dict[
             "AI_2"] == Screen.AI_PLAY:

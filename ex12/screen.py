@@ -25,7 +25,6 @@ COLUMNS = 7
 
 
 class Screen(tk.Tk):
-
     AI_PLAY = True
     PLAYER_PLAY = False
     NONE_PLAY = None
@@ -45,11 +44,9 @@ class Screen(tk.Tk):
             frame.grid(row=0, column=0, sticky="nsew")
             self.show_frame(page)
 
-
-    def get_frame(self,cont):
+    def get_frame(self, cont):
         """This method returns the frames value"""
         return self.frames[cont]
-
 
     def show_frame(self, cont):
         """This is for switching frames"""
@@ -82,7 +79,6 @@ class StartPage(tk.Frame):
                            self.green: "green4", self.black: "black",
                            self.yellow: "orange", self.pink: "deeppink2"}
 
-
     def create_main_menu(self):
         """
         This function creates main menu.
@@ -90,47 +86,46 @@ class StartPage(tk.Frame):
         self.canvas = tk.Canvas(self, height=700, widt=700, bg="orange2")
         self.canvas.pack()
         self.welcome_msg = self.canvas.create_text(340, 50,
-                                        text="\nWelcome to", font=MEDIUM_FONT)
+                                                   text="\nWelcome to", font=MEDIUM_FONT)
         self.welcome_msg_blue = self.canvas.create_text(340, 120,
-                                        text="CONNECT FOUR\n", font=LARGE_FONT,
+                                                        text="CONNECT FOUR\n", font=LARGE_FONT,
                                                         fill="medium blue")
         self.menu_title = self.canvas.create_text(350, 185,
-                    text="Choose how you want to play:\n\n", font=SMALL_FONT)
+                                                  text="Choose how you want to play:\n\n", font=SMALL_FONT)
 
         self.player_one = self.canvas.create_text(160, 230, text="Player 1\n",
                                                   font=MEDIUM_FONT)
         self.human_button_1 = tk.Button(self, text="Human player",
-                    bg="medium blue", fg="white", command=lambda:
-                    self.change_button_color_human_1(self.human_button_1))
+                                        bg="medium blue", fg="white", command=lambda:
+            self.change_button_color_human_1(self.human_button_1))
         self.human_button_1_window = self.canvas.create_window(155, 263,
-                                                window=self.human_button_1)
+                                                               window=self.human_button_1)
         self.ai_button_1 = tk.Button(self, text="AI player",
-                            bg="red3", command=lambda:
-                            self.change_button_color_ai_1(self.ai_button_1))
+                                     bg="red3", command=lambda:
+            self.change_button_color_ai_1(self.ai_button_1))
         self.ai_button_1_window = self.canvas.create_window(153, 300,
-                                                    window=self.ai_button_1)
+                                                            window=self.ai_button_1)
 
         self.player_two = self.canvas.create_text(540, 230, text="Player 2\n",
                                                   font=MEDIUM_FONT)
         self.human_button_2 = tk.Button(self, text="Human player",
-                        bg="medium blue", fg="white", command=lambda:
-                        self.change_button_color_human_2(self.human_button_2))
+                                        bg="medium blue", fg="white", command=lambda:
+            self.change_button_color_human_2(self.human_button_2))
         self.human_button_2_window = self.canvas.create_window(540, 263,
-                                                window=self.human_button_2)
+                                                               window=self.human_button_2)
         self.ai_button_2 = tk.Button(self, text="AI player",
-                            bg="red3", command=lambda:
-                            self.change_button_color_ai_2(self.ai_button_2))
+                                     bg="red3", command=lambda:
+            self.change_button_color_ai_2(self.ai_button_2))
         self.ai_button_2_window = self.canvas.create_window(540, 300,
-                                                    window=self.ai_button_2)
+                                                            window=self.ai_button_2)
         self.choose_color = self.canvas.create_text(350, 440,
-                text="Please choose one colour for each player:\n\n\n\n\n\n",
+                                                    text="Please choose one colour for each player:\n\n\n\n\n\n",
                                                     font=SMALL_FONT)
         self.create_color_buttons()
         self.play_button = tk.Button(self, text="PLAY", bg="red", font="bold",
-                            width=10, command=lambda: self.if_play_pressed())
+                                     width=10, command=lambda: self.if_play_pressed())
         self.play_button_window = self.canvas.create_window(333, 510,
-                                                       window=self.play_button)
-
+                                                            window=self.play_button)
 
     def choose_ai_or_human_player(self):
         """
@@ -196,7 +191,6 @@ class StartPage(tk.Frame):
             self.ai_button_2.configure(bg="red3")
             self.counter_dict[self.ai_button_2] = Screen.PLAYER_PLAY
 
-
     def if_play_pressed(self):
         """
         This method controls what happens when a user presses "play" button.
@@ -215,43 +209,39 @@ class StartPage(tk.Frame):
             self.controller.show_frame(GamePage)
             self.show_whos_playing()
 
-
-
     def show_whos_playing(self):
         """
         This method will change GamePage properties according to who will play
         ai or human
         """
-        if self.controller.counter_dict["AI_1"] == Screen.AI_PLAY and\
+        if self.controller.counter_dict["AI_1"] == Screen.AI_PLAY and \
                 self.controller.counter_dict[
-            "AI_2"] == Screen.AI_PLAY:
+                    "AI_2"] == Screen.AI_PLAY:
+            self.controller.get_frame(GamePage).change_main_menu_val()
             self.controller.get_frame(GamePage).its_ai_vs_ai(260, 560)
             self.controller.get_frame(GamePage).ai_vs_ai()
 
-        if self.controller.counter_dict["AI_1"] == Screen.AI_PLAY and\
+        if self.controller.counter_dict["AI_1"] == Screen.AI_PLAY and \
                 self.controller.counter_dict[
-            "AI_2"] == Screen.PLAYER_PLAY:
+                    "AI_2"] == Screen.PLAYER_PLAY:
             ai = AI(self.controller.get_frame(GamePage).game, WHITE)
             column_from_ai = ai.find_legal_move(AI.FAST_ALGORITHM_TIMEOUT)
             self.controller.get_frame(GamePage).player_move(
                 self.controller.get_frame(GamePage).game.make_move(column_from_ai),
-                                                                "COLOR_1")
+                "COLOR_1")
             self.controller.get_frame(GamePage).its_you_or_ai(220, 560)
-        if self.controller.counter_dict["AI_1"] == Screen.PLAYER_PLAY and\
+        if self.controller.counter_dict["AI_1"] == Screen.PLAYER_PLAY and \
                 self.controller.counter_dict[
-            "AI_2"] == Screen.PLAYER_PLAY:
+                    "AI_2"] == Screen.PLAYER_PLAY:
             self.controller.get_frame(GamePage).its_your_turn(260)
-        if self.controller.counter_dict["AI_1"] == Screen.PLAYER_PLAY and\
+        if self.controller.counter_dict["AI_1"] == Screen.PLAYER_PLAY and \
                 self.controller.counter_dict[
-            "AI_2"] == Screen.AI_PLAY:
+                    "AI_2"] == Screen.AI_PLAY:
             self.controller.get_frame(GamePage).its_you_or_ai(520, 260)
 
-
-
-###############################################################################
-# COLOR RELATED FITCHERS
-###############################################################################
-
+    ###############################################################################
+    # COLOR RELATED FITCHERS
+    ###############################################################################
 
     def create_color_buttons(self):
         """
@@ -259,7 +249,7 @@ class StartPage(tk.Frame):
         """
         self.white = tk.Button(self, bg="antique white", text="white",
                                command=lambda: self.choose_white(self.white,
-                                                            "antique white"))
+                                                                 "antique white"))
 
         self.white_window = self.canvas.create_window(103, 432,
                                                       window=self.white)
@@ -267,21 +257,20 @@ class StartPage(tk.Frame):
                              command=lambda: self.choose_red(self.red, "red"))
         self.red_window = self.canvas.create_window(158, 432, window=self.red)
         self.green = tk.Button(self, bg="green4", text="green",
-                    command=lambda: self.choose_green(self.green, "green4"))
+                               command=lambda: self.choose_green(self.green, "green4"))
         self.green_window = self.canvas.create_window(215, 432,
                                                       window=self.green)
         self.black = tk.Button(self, bg="black", fg="white", text="black",
-                     command=lambda: self.choose_black(self.black, "black"))
+                               command=lambda: self.choose_black(self.black, "black"))
         self.black_window = self.canvas.create_window(482, 432,
                                                       window=self.black)
         self.yellow = tk.Button(self, bg="orange", text="yellow",
-                     command=lambda: self.choose_yellow(self.yellow, "orange"))
+                                command=lambda: self.choose_yellow(self.yellow, "orange"))
         self.yellow_window = self.canvas.create_window(545, 432,
                                                        window=self.yellow)
         self.pink = tk.Button(self, bg="deeppink2", text="pink",
-                    command=lambda: self.choose_pink(self.pink, "deeppink2"))
+                              command=lambda: self.choose_pink(self.pink, "deeppink2"))
         self.pink_window = self.canvas.create_window(605, 432, window=self.pink)
-
 
     def choose_black(self, button, color):
         """This method is for choosing black"""
@@ -377,11 +366,11 @@ class GamePage(tk.Frame):
         self.create_game_screen()
         self.canvas.bind("<Button-1>", self.return_column)
         self.__check_winner = True
+        self.__main_menu = False
 
-
-###############################################################################
-# CREATE GAME SCREEN
-###############################################################################
+    ###############################################################################
+    # CREATE GAME SCREEN
+    ###############################################################################
 
     def create_game_screen(self):
         """
@@ -392,52 +381,50 @@ class GamePage(tk.Frame):
         self._draw_holes()
         self.create_game_screen_buttons()
         self.player_1 = self.canvas.create_text(110, 65, text="Player 1",
-            font=MEDIUM_FONT, fill=self.controller.main_color_dict["COLOR_1"])
+                                                font=MEDIUM_FONT, fill=self.controller.main_color_dict["COLOR_1"])
         self.player_2 = self.canvas.create_text(410, 65, text="Player 2",
-            font=MEDIUM_FONT, fill=self.controller.main_color_dict["COLOR_2"])
-
+                                                font=MEDIUM_FONT, fill=self.controller.main_color_dict["COLOR_2"])
 
     def create_game_screen_buttons(self):
         """
         This method creates the buttons in the game screen
         """
         self.button1 = tk.Button(self, text="Quit", command=self.quit_button,
-                                                        anchor="w")
+                                 anchor="w")
         self.button1.configure(width=10, activebackground="red")
         self.button1_window = self.canvas.create_window(10, 10, anchor="nw",
                                                         window=self.button1)
         self.button2 = tk.Button(self, text="Main menu",
-                                 command=self.main_menu_buton, anchor="w")
+                                 command=self.main_menu_button, anchor="w")
         self.button2.configure(width=10, activebackground="blue")
         self.button2_window = self.canvas.create_window(100, 10, anchor="nw",
                                                         window=self.button2)
         self.button3 = tk.Button(self, text="Help", command=self.help_button,
-                                                        anchor="w")
+                                 anchor="w")
         self.button3.configure(width=10, activebackground="blue")
         self.button3_window = self.canvas.create_window(200, 10, anchor="nw",
                                                         window=self.button3)
-
 
     def quit_button(self):
         """
         This method is binded to the quit button
         """
         msg = tkinter.messagebox.askquestion("QUIT", "Are you sure you want"
-                                                                " to quit?")
+                                                     " to quit?")
         if msg == "yes":
             self.controller.destroy()
         else:
             return
 
-
-    def main_menu_buton(self):
+    def main_menu_button(self):
         """
         This method is binded to the main menu button
         """
         msg = tkinter.messagebox.askquestion("Main menu", "Are you sure you "
-                    "want to go back to main menu? \n Every change you've made"
+                                                          "want to go back to main menu? \n Every change you've made"
                                                           " will be lost")
         if msg == "yes":
+            self.__main_menu = True
             for checker in self.checkers_lst:
                 self.canvas.delete(checker)
             self.game = Game()
@@ -447,20 +434,18 @@ class GamePage(tk.Frame):
         else:
             return
 
-
     def help_button(self):
         """
         This method is binded to the help button
         """
         msg = tkinter.messagebox.showinfo("Help", "WELCOME TO CONNECT FOUR! "
-        "\n\n HOW TO PLAY? \n\nThis is a game for 2 players. \nEvery player,"
-                    " at their turn, chooses a column to insert a checker.\n"
-                "The winner gets 4 checkers in a row! the 4-in-a-row can be"
-            " horizontal, vartical, or diagonal. \n\nABOUT THE CREATORS: \n\n"
-            "Barak Diker and Noa Babliki are students at Hebrew university of "
-                "jerusalem. \nThis is their final project for Introduction to"
+                                                  "\n\n HOW TO PLAY? \n\nThis is a game for 2 players. \nEvery player,"
+                                                  " at their turn, chooses a column to insert a checker.\n"
+                                                  "The winner gets 4 checkers in a row! the 4-in-a-row can be"
+                                                  " horizontal, vartical, or diagonal. \n\nABOUT THE CREATORS: \n\n"
+                                                  "Barak Diker and Noa Babliki are students at Hebrew university of "
+                                                  "jerusalem. \nThis is their final project for Introduction to"
                                                   " computer science.")
-
 
     def _draw_holes(self):
         """
@@ -472,9 +457,9 @@ class GamePage(tk.Frame):
                 self.hole = self.canvas.create_oval(
                     9 + i, 560 - j, 90 + i, 640 - j, fill="grey")
 
-###############################################################################
-# PLAYER VS PLAYER
-###############################################################################
+    ###############################################################################
+    # PLAYER VS PLAYER
+    ###############################################################################
 
     def return_column(self, event):
         """
@@ -486,19 +471,18 @@ class GamePage(tk.Frame):
         col = int(event.x // col_width)
 
         try:
-            if self.controller.counter_dict["AI_1"] == Screen.PLAYER_PLAY and\
+            if self.controller.counter_dict["AI_1"] == Screen.PLAYER_PLAY and \
                     self.controller.counter_dict["AI_2"] == Screen.PLAYER_PLAY:
                 self.human_vs_human(col)
-            if self.controller.counter_dict["AI_1"] == Screen.PLAYER_PLAY and\
+            if self.controller.counter_dict["AI_1"] == Screen.PLAYER_PLAY and \
                     self.controller.counter_dict["AI_2"] == Screen.AI_PLAY:
                 self.human_vs_ai(col)
-            if self.controller.counter_dict["AI_1"] == Screen.AI_PLAY and\
+            if self.controller.counter_dict["AI_1"] == Screen.AI_PLAY and \
                     self.controller.counter_dict["AI_2"] == Screen.PLAYER_PLAY:
                 self.ai_vs_human(col)
 
         except Exception:
             return
-
 
     def human_vs_human(self, col):
         """
@@ -513,7 +497,6 @@ class GamePage(tk.Frame):
             self.its_your_turn(260)
             self.player_move(self.game.make_move(col), "COLOR_2")
 
-
     def human_vs_ai(self, col):
         """
         This method is activated if user chose to play human vs ai
@@ -525,13 +508,10 @@ class GamePage(tk.Frame):
         self.delete_last_ai()
         self.after(200, self.ai_black)
 
-
     def ai_black(self):
         ai = AI(self.game, BLACK)
         column_from_ai = ai.find_legal_move(AI.FAST_ALGORITHM_TIMEOUT)
         self.player_move(self.game.make_move(column_from_ai), "COLOR_2")
-
-
 
     def ai_vs_human(self, col):
         """
@@ -548,23 +528,25 @@ class GamePage(tk.Frame):
         column_from_ai = ai.find_legal_move(AI.FAST_ALGORITHM_TIMEOUT)
         self.player_move(self.game.make_move(column_from_ai), "COLOR_1")
 
-
-
     def ai_vs_ai(self):
         """
         This method is activeted if user chooses to play ai vs ai
         """
+        if self.__main_menu:
+            return
         if self.check_turn() == WHITE:
             ai = AI(self.game, WHITE)
             column_from_ai = ai.find_legal_move(AI.FAST_ALGORITHM_TIMEOUT)
             self.player_move(self.game.make_move(column_from_ai), "COLOR_1")
-            self.after(1000,self.ai_vs_ai)
+            self.after(1000, self.ai_vs_ai)
         elif self.check_turn() == BLACK:
             ai = AI(self.game, BLACK)
             column_from_ai = ai.find_legal_move(AI.FAST_ALGORITHM_TIMEOUT)
             self.player_move(self.game.make_move(column_from_ai), "COLOR_2")
-            self.after(1000,self.ai_vs_ai)
+            self.after(1000, self.ai_vs_ai)
 
+    def change_main_menu_val(self):
+        self.__main_menu = False
 
     def player_move(self, tuple, color):
         """
@@ -576,7 +558,7 @@ class GamePage(tk.Frame):
 
         self.checkers_lst.append(
             self.canvas.create_oval(9 + i, 110 + j, 90 + i, 190 + j,
-                            fill=self.controller.main_color_dict[color]))
+                                    fill=self.controller.main_color_dict[color]))
         if self.controller.counter_dict["AI_1"] == Screen.AI_PLAY and \
                 self.controller.counter_dict["AI_2"] == Screen.PLAYER_PLAY:
             if self.check_turn() == BLACK:
@@ -588,12 +570,9 @@ class GamePage(tk.Frame):
         self.__check_winner = self.check_winner()
         return
 
-
-
-###############################################################################
-# METHODS FOR ALL PLAYERS
-###############################################################################
-
+    ###############################################################################
+    # METHODS FOR ALL PLAYERS
+    ###############################################################################
 
     def check_winner(self):
         """This method checks the state of the game"""
@@ -616,9 +595,9 @@ class GamePage(tk.Frame):
         if self.game.get_current_player() == BLACK:
             return BLACK
 
-###############################################################################
-# END OF GAME
-###############################################################################
+    ###############################################################################
+    # END OF GAME
+    ###############################################################################
 
     def WIN_message(self, player):
         """This is what happened when the game is over. it calls the
@@ -646,30 +625,28 @@ class GamePage(tk.Frame):
         else:
             self.controller.destroy()
 
-
     def who_vs_who(self):
         """This method shows if the player is ai or human in a new game"""
-        if self.controller.counter_dict["AI_1"] == Screen.PLAYER_PLAY and\
+        if self.controller.counter_dict["AI_1"] == Screen.PLAYER_PLAY and \
                 self.controller.counter_dict[
-            "AI_2"] == Screen.PLAYER_PLAY:
+                    "AI_2"] == Screen.PLAYER_PLAY:
             self.its_your_turn(260)
-        elif self.controller.counter_dict["AI_1"] == Screen.AI_PLAY and\
+        elif self.controller.counter_dict["AI_1"] == Screen.AI_PLAY and \
                 self.controller.counter_dict[
-            "AI_2"] == Screen.PLAYER_PLAY:
+                    "AI_2"] == Screen.PLAYER_PLAY:
             self.its_you_or_ai(220, 560)
-        elif self.controller.counter_dict["AI_1"] == Screen.PLAYER_PLAY and\
+        elif self.controller.counter_dict["AI_1"] == Screen.PLAYER_PLAY and \
                 self.controller.counter_dict[
-            "AI_2"] == Screen.AI_PLAY:
+                    "AI_2"] == Screen.AI_PLAY:
             try:
                 self.return_column(self, event)
                 self.its_you_or_ai(520, 260)
             except NameError:
-               self.its_you_or_ai(520, 260)
-        elif self.controller.counter_dict["AI_1"] == Screen.AI_PLAY and\
+                self.its_you_or_ai(520, 260)
+        elif self.controller.counter_dict["AI_1"] == Screen.AI_PLAY and \
                 self.controller.counter_dict[
-            "AI_2"] == Screen.AI_PLAY:
+                    "AI_2"] == Screen.AI_PLAY:
             self.its_ai_vs_ai(560, 260)
-
 
     def animation(self):
         """
@@ -679,13 +656,11 @@ class GamePage(tk.Frame):
         try:
             for checker in self.checkers_lst:
                 self.canvas.move(checker, random.randint(-400, 400),
-                                    random.randint(-400, 400))
+                                 random.randint(-400, 400))
                 self.update()
                 self.after(10)
         except:
             return
-
-
 
     def show_winning_seq(self, coor):
         """This metod shows the winning sequal"""
@@ -696,41 +671,37 @@ class GamePage(tk.Frame):
             self.canvas.create_oval(9 + i, 110 + j, 90 + i, 190 + j,
                                     outline="dark violet", width="10"))
 
-
     def delete_winning_four(self):
         """This method deletes the winning sequal"""
         for win in self.winning_lst:
             self.canvas.delete(win)
 
-
-###############################################################################
-# EXSTRAS I MADE COUSE IM OBSSESD
-###############################################################################
-
+    ###############################################################################
+    # EXSTRAS I MADE COUSE IM OBSSESD
+    ###############################################################################
 
     def its_your_turn(self, x):
         """This method creates text that says whos turn is it"""
         self.turn_lst.append(self.canvas.create_text(x, 67,
-                text="It's your turn!", font=SMALL_FONT, fill="medium blue"))
-
+                                                     text="It's your turn!", font=SMALL_FONT, fill="medium blue"))
 
     def its_you_or_ai(self, x, y):
         """
         This method creates text that says whos turn is it
         """
         self.turn_lst.append(self.canvas.create_text(x, 67, text="AI",
-                                        font=SMALL_FONT, fill="medium blue"))
+                                                     font=SMALL_FONT, fill="medium blue"))
         self.turn_lst.append(self.canvas.create_text(y, 67, text="That's you!",
-                                        font=SMALL_FONT, fill="medium blue"))
+                                                     font=SMALL_FONT, fill="medium blue"))
 
     def its_ai_vs_ai(self, x, y):
         """
         This method creates text that says whos turn is it
         """
         self.turn_lst.append(self.canvas.create_text(x, 67, text="AI",
-                                        font=SMALL_FONT, fill="medium blue"))
+                                                     font=SMALL_FONT, fill="medium blue"))
         self.turn_lst.append(self.canvas.create_text(y, 67, text="AI",
-                                        font=SMALL_FONT, fill="medium blue"))
+                                                     font=SMALL_FONT, fill="medium blue"))
 
     def delete_turn(self):
         """
@@ -738,7 +709,6 @@ class GamePage(tk.Frame):
         """
         for turn in self.turn_lst:
             self.canvas.delete(turn)
-
 
     def show_last_ai(self, coor):
         y, x = coor

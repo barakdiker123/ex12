@@ -1,3 +1,12 @@
+#############################################################
+# FILE : game.py
+# WRITER : Noa Babliki, noa.babliki , 206090409
+# WRITER : Barak Diker, barakdiker, 313538225
+# EXERCISE : intro2cs ex12 2019-2018
+# DESCRIPTION: The rules of the game
+#############################################################
+
+
 import numpy as np
 import functools
 from ex12.board import Board

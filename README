@@ -1,13 +1,36 @@
 barakdiker
 313538225
-noababliki
+noa.babliki
 206090409
 
 =====================================
 ex.12 connect 4
 =====================================
 
-No GUI:
+
+=====================================
+Description
+=====================================
+
+This is a game of connect four!
+
+In order to play, please choose how you want to play:
+human or ai, for player 1 or player 2.
+
+Than, please choose a color for each player.
+
+If you chose human player, please press the column in
+The board you want to insert your checker to.
+ai will play automaticaly.
+
+
+
+
+
+=====================================
+No GUI
+=====================================
+
     Game Play Interface:
     In order to play the game with no GUI
     you should use the following commands

@@ -240,7 +240,16 @@ class Board:
         return arr  # , pivot_index
 
     def find_four_via_coordinate_tuple(self, tuple_of_coordinate, player, sequence):
-        "sequence variable is for finding an connect of 4 or connect of 3 "
+        """
+        This function meant to determine if there is a winner in a given coordinate
+        This function is basically help function for:
+        get_coordinate_tuple_winning_in_point(self, x, y, sequence)
+
+        :param tuple_of_coordinate: given a list of coordinate that we want the function to search
+        :param player: Board.WHITE or Board.BLACK
+        :param sequence: sequence variable is for finding an connect of 4 or connect of 3
+        :return: Board.NOT_FOUND or (list of winning coordinate)
+        """
         if len(tuple_of_coordinate) < sequence:
             return Board.NOT_FOUND
         lst_of_connected_four = []
@@ -259,7 +268,8 @@ class Board:
 
     def get_winning_tuple_coordinate(self, x, y):
         """
-        Given X,Y coordinate they return a winning
+        Given X,Y coordinate they return a winning coordinate points
+        This function is important for outsourcing  / interface
         :param x:
         :param y:
         :return:
@@ -500,6 +510,7 @@ class Board:
         This function get all possible moves
         :return: lst of all possible moves
         """
+        self.update_possible_moves()
         lst = []
         for i, ele in enumerate(self.possible_moves):
             if ele:

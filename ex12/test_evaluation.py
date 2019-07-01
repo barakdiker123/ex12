@@ -1,5 +1,5 @@
 from ex12.board import Board
-from ex12.evaluation import *
+from ex12.no_gui import *
 import numpy as np
 
 

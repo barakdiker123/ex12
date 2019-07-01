@@ -67,7 +67,6 @@ class AI:
         if column_winning != Board.NOT_FOUND:
             return column_winning
         self.__board_instance.evaluate(self.__player, self.dict_move)
-        print(self.dict_move)
         return AI.key_with_max_val(self.dict_move)
 
     @staticmethod
@@ -77,12 +76,6 @@ class AI:
         values = list(dic.values())
         keys = list(dic.keys())
         return keys[values.index(max(values))]
-
-    def backtrack_helper(self, depth_temp, player, DEPTH):
-        pass
-
-    def medium_algorithm(self):
-        pass
 
     def find_legal_move(self, timeout=None):
         """
@@ -105,58 +98,4 @@ class AI:
             return self.fast_algorithm()
 
     def get_last_found_move(self):
-        pass
-
-
-from ex12.game import Game
-import timeit
-
-
-class Wipe(object):
-    def __repr__(self):
-        return '\n' * 1000
-
-
-def check_win(game):
-    Wipe()
-    if game.get_winner() == game.WHITE_WINS:
-        print("The AI has won you easily!")
-    if game.get_winner() == game.BLACK_WINS:
-        print("You have done the impossible you won the AI!!")
-    if game.get_winner() == game.TIE:
-        print("TIE!")
-
-
-wipe = Wipe()
-if __name__ == "__main__":
-    game = Game()
-    while True:
-        Wipe()
-        check_win(game)
-        ai = AI(game, Board.WHITE)
-        start = timeit.default_timer()
-        column_cal = ai.find_legal_move(AI.FAST_ALGORITHM_TIMEOUT)
-        stop = timeit.default_timer()
-        time = stop - start
-        print("Computer played: %s \nTime: %s" % (column_cal, time))
-        game.make_move(column_cal)
-        check_win(game)
-        print(game)
-        print("-----------------")
-        print("<<0 1 2 3 4 5 6>>")
-        try_again = True
-        while try_again:
-            game.board_instance.update_possible_moves()
-            col = int(input("Enter Your move:"))
-            if 0 <= col < Board.COLUMNS:
-                if game.board_instance.possible_moves[col]:
-                    game.make_move(col)
-                    try_again = False
-                else:
-                    Wipe()
-                    print("Computer played: %s" % column_cal)
-                    print("Invalid Move")
-                    print(game)
-                    print("-----------------")
-                    print("<<0 1 2 3 4 5 6>>")
-                    try_again = True
+        return AI.key_with_max_val(self.dict_move)

@@ -47,6 +47,7 @@ class TestGame(unittest.TestCase):
                 self.g.make_move(i)
         for i in range(5):
             self.g.make_move(6)
+        print(self.g)
         self.assertEqual(self.g.get_winner(), Game.TIE, msg="Random Fill the board")
 
     def test_get_current_player1(self):
@@ -63,6 +64,9 @@ class TestGame(unittest.TestCase):
         self.g.make_move(0)
         self.assertEqual(self.g.get_player_at(5, 0), 1)
         self.assertEqual(self.g.get_player_at(5, 6), None)
+
+    def test_get_winner(self):
+        pass
 
     def tearDown(self) -> None:
         del self.g

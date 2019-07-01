@@ -62,3 +62,6 @@ class TestBoard(unittest.TestCase):
         self.board.board[3, 3] = Board.WHITE
         self.board.board[4, 4] = Board.WHITE
         self.assertEqual(self.board.get_coordinate_tuple_winning_in_point(2, 2, 4), [(1, 1), (2, 2), (3, 3), (4, 4)])
+
+    def test_get_winner(self):
+        pass

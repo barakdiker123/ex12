@@ -1,3 +1,11 @@
+#############################################################
+# FILE : Screen.py
+# WRITER : Noa Babliki, noa.babliki , 206090409
+# WRITER : Barak Diker, barakdiker, 313538225
+# EXERCISE : intro2cs ex12 2019-2018
+# DESCRIPTION: A game of connect four. enjoy!
+#############################################################
+
 import tkinter as tk
 import tkinter.messagebox
 from ex12.game import *
@@ -72,7 +80,7 @@ class StartPage(tk.Frame):
         self.color_dict_2 = {self.black: 0, self.yellow: 0, self.pink: 0}
         self.color_dict = {self.white: "antique white", self.red: "red",
                            self.green: "green4", self.black: "black",
-                           self.yellow: "orange", self.pink: "deeppink2"}
+                           self.yellow: "orange", self.pink: "deep pink2"}
 
 
     def create_main_menu(self):
@@ -204,8 +212,9 @@ class StartPage(tk.Frame):
             self.color_chosen(self.color_dict_1, "white", "COLOR_1")
             self.color_chosen(self.color_dict_2, "black", "COLOR_2")
             self.choose_ai_or_human_player()
-            self.show_whos_playing()
             self.controller.show_frame(GamePage)
+            self.show_whos_playing()
+
 
 
     def show_whos_playing(self):
@@ -216,18 +225,18 @@ class StartPage(tk.Frame):
         if self.controller.counter_dict["AI_1"] == Screen.AI_PLAY and\
                 self.controller.counter_dict[
             "AI_2"] == Screen.AI_PLAY:
-            tkinter.messagebox.showinfo("INSTRUCTIONS",
-                    "Press any spot on the board to watch a single AI move")
             self.controller.get_frame(GamePage).its_ai_vs_ai(260, 560)
+            self.controller.get_frame(GamePage).ai_vs_ai()
+
         if self.controller.counter_dict["AI_1"] == Screen.AI_PLAY and\
                 self.controller.counter_dict[
             "AI_2"] == Screen.PLAYER_PLAY:
             ai = AI(self.controller.get_frame(GamePage).game, WHITE)
             column_from_ai = ai.find_legal_move(AI.FAST_ALGORITHM_TIMEOUT)
-            self.controller.get_frame(GamePage).its_you_or_ai(220, 560)
             self.controller.get_frame(GamePage).player_move(
                 self.controller.get_frame(GamePage).game.make_move(column_from_ai),
                                                                 "COLOR_1")
+            self.controller.get_frame(GamePage).its_you_or_ai(220, 560)
         if self.controller.counter_dict["AI_1"] == Screen.PLAYER_PLAY and\
                 self.controller.counter_dict[
             "AI_2"] == Screen.PLAYER_PLAY:
@@ -269,8 +278,8 @@ class StartPage(tk.Frame):
                      command=lambda: self.choose_yellow(self.yellow, "orange"))
         self.yellow_window = self.canvas.create_window(542, 432,
                                                        window=self.yellow)
-        self.pink = tk.Button(self, bg="deeppink2", text="pink",
-                    command=lambda: self.choose_pink(self.pink, "deeppink2"))
+        self.pink = tk.Button(self, bg="deep pink2", text="pink",
+                    command=lambda: self.choose_pink(self.pink, "deep pink2"))
         self.pink_window = self.canvas.create_window(587, 432, window=self.pink)
 
 
@@ -279,7 +288,7 @@ class StartPage(tk.Frame):
         if not self.color_dict_2[button] % 2:
             button.configure(bg="white", fg="black")
             self.yellow.configure(bg="orange")
-            self.pink.configure(bg="deeppink2")
+            self.pink.configure(bg="deep pink2")
             self.color_dict_2[self.yellow] = 0
             self.color_dict_2[self.pink] = 0
             self.color_dict_2[button] = 1
@@ -289,7 +298,7 @@ class StartPage(tk.Frame):
         if not self.color_dict_2[button] % 2:
             button.configure(bg="white", fg="black")
             self.black.configure(bg="black", fg="white")
-            self.pink.configure(bg="deeppink2")
+            self.pink.configure(bg="deep pink2")
             self.color_dict_2[self.black] = 0
             self.color_dict_2[self.pink] = 0
             self.color_dict_2[button] = 1
@@ -364,8 +373,10 @@ class GamePage(tk.Frame):
         self.checkers_lst = []
         self.turn_lst = []
         self.winning_lst = []
+        self.last_ai_lst = []
         self.create_game_screen()
         self.canvas.bind("<Button-1>", self.return_column)
+        self.__check_winner = True
 
 
 ###############################################################################
@@ -431,6 +442,7 @@ class GamePage(tk.Frame):
                 self.canvas.delete(checker)
             self.game = Game()
             self.delete_turn()
+            self.delete_last_ai()
             self.controller.show_frame(StartPage)
         else:
             return
@@ -483,9 +495,6 @@ class GamePage(tk.Frame):
             if self.controller.counter_dict["AI_1"] == Screen.AI_PLAY and\
                     self.controller.counter_dict["AI_2"] == Screen.PLAYER_PLAY:
                 self.ai_vs_human(col)
-            if self.controller.counter_dict["AI_1"] == Screen.AI_PLAY and\
-                    self.controller.counter_dict["AI_2"] == Screen.AI_PLAY:
-                self.ai_vs_ai()
 
         except Exception:
             return
@@ -511,11 +520,17 @@ class GamePage(tk.Frame):
         """
         if self.check_turn() == WHITE:
             self.player_move(self.game.make_move(col), "COLOR_1")
-        self.after(200)
+        if not self.__check_winner:
+            return
+        self.delete_last_ai()
+        self.after(200, self.ai_black)
 
+
+    def ai_black(self):
         ai = AI(self.game, BLACK)
         column_from_ai = ai.find_legal_move(AI.FAST_ALGORITHM_TIMEOUT)
         self.player_move(self.game.make_move(column_from_ai), "COLOR_2")
+
 
 
     def ai_vs_human(self, col):
@@ -525,11 +540,14 @@ class GamePage(tk.Frame):
         """
         if self.check_turn() == BLACK:
             self.player_move(self.game.make_move(col), "COLOR_2")
-            self.after(200)
+        self.delete_last_ai()
+        self.after(200, self.ai_white)
 
+    def ai_white(self):
         ai = AI(self.game, WHITE)
         column_from_ai = ai.find_legal_move(AI.FAST_ALGORITHM_TIMEOUT)
         self.player_move(self.game.make_move(column_from_ai), "COLOR_1")
+
 
 
     def ai_vs_ai(self):
@@ -540,11 +558,12 @@ class GamePage(tk.Frame):
             ai = AI(self.game, WHITE)
             column_from_ai = ai.find_legal_move(AI.FAST_ALGORITHM_TIMEOUT)
             self.player_move(self.game.make_move(column_from_ai), "COLOR_1")
+            self.after(1000,self.ai_vs_ai)
         elif self.check_turn() == BLACK:
             ai = AI(self.game, BLACK)
             column_from_ai = ai.find_legal_move(AI.FAST_ALGORITHM_TIMEOUT)
             self.player_move(self.game.make_move(column_from_ai), "COLOR_2")
-
+            self.after(1000,self.ai_vs_ai)
 
 
     def player_move(self, tuple, color):
@@ -558,7 +577,15 @@ class GamePage(tk.Frame):
         self.checkers_lst.append(
             self.canvas.create_oval(9 + i, 110 + j, 90 + i, 190 + j,
                             fill=self.controller.main_color_dict[color]))
-        self.check_winner()
+        if self.controller.counter_dict["AI_1"] == Screen.AI_PLAY and \
+                self.controller.counter_dict["AI_2"] == Screen.PLAYER_PLAY:
+            if self.check_turn() == BLACK:
+                self.show_last_ai(tuple)
+        elif self.controller.counter_dict["AI_1"] == Screen.PLAYER_PLAY and \
+                self.controller.counter_dict["AI_2"] == Screen.AI_PLAY:
+            if self.check_turn() == WHITE:
+                self.show_last_ai(tuple)
+        self.__check_winner = self.check_winner()
         return
 
 
@@ -570,7 +597,7 @@ class GamePage(tk.Frame):
 
     def check_winner(self):
         """This method checks the state of the game"""
-        if self.game.get_winner() == TIE:  ###################################### NOTICe!!!! DOESNT WORK NOT SURE IF IN GAME RULES
+        if self.game.get_winner() == Game.TIE:
             self.WIN_message(TIE)
             return False
         if self.game.get_winner() == Game.WHITE_WINS:
@@ -597,24 +624,25 @@ class GamePage(tk.Frame):
         """This is what happened when the game is over. it calls the
         animation and shows a messagebox that tells who wins and if the
         player wants to play again"""
-        for i in range(4):
-            self.show_winning_seq(self.game.winning_coordinate[i])
+        if player == WHITE or player == BLACK:
+            for i in range(4):
+                self.show_winning_seq(self.game.winning_coordinate[i])
         if player == WHITE:
             text = "PLAYER 1, YOU WON! \n\nwant to play again?"
         if player == BLACK:
             text = "PLAYER 2, YOU WON! \n\nwant to play again?"
         if player == TIE:
-            text == "INCREDIBLE TIE! \n\nwant to play again?"
-        win_message = tkinter.messagebox.askquestion("WE HAVE A WINNER!", text)
+            text = "INCREDIBLE TIE! \n\nwant to play again?"
+        win_message = tkinter.messagebox.askquestion("Game over", text)
         self.delete_turn()
+        self.delete_last_ai()
         self.delete_winning_four()
         [self.animation() for _ in range(7)]
         if win_message == "yes":
             for checker in self.checkers_lst:
                 self.canvas.delete(checker)
-            self.who_vs_who()
             self.game = Game()
-
+            self.who_vs_who()
         else:
             self.controller.destroy()
 
@@ -625,22 +653,29 @@ class GamePage(tk.Frame):
                 self.controller.counter_dict[
             "AI_2"] == Screen.PLAYER_PLAY:
             self.its_your_turn(260)
-        if self.controller.counter_dict["AI_1"] == Screen.AI_PLAY and\
+        elif self.controller.counter_dict["AI_1"] == Screen.AI_PLAY and\
                 self.controller.counter_dict[
             "AI_2"] == Screen.PLAYER_PLAY:
             self.its_you_or_ai(220, 560)
-        if self.controller.counter_dict["AI_1"] == Screen.PLAYER_PLAY and\
+        elif self.controller.counter_dict["AI_1"] == Screen.PLAYER_PLAY and\
                 self.controller.counter_dict[
             "AI_2"] == Screen.AI_PLAY:
-            self.its_you_or_ai(520, 260)
-        if self.controller.counter_dict["AI_1"] == Screen.AI_PLAY and\
+            try:
+                self.return_column(self, event)
+                self.its_you_or_ai(520, 260)
+            except NameError:
+               self.its_you_or_ai(520, 260)
+        elif self.controller.counter_dict["AI_1"] == Screen.AI_PLAY and\
                 self.controller.counter_dict[
             "AI_2"] == Screen.AI_PLAY:
             self.its_ai_vs_ai(560, 260)
 
 
     def animation(self):
-        """This is the animation that happens when a player wins or when its a tie"""
+        """
+        This is the animation that happens when a player wins or when its
+         a tie
+         """
         for checker in self.checkers_lst:
             self.canvas.move(checker, random.randint(-400, 400),
                                 random.randint(-400, 400))
@@ -702,4 +737,15 @@ class GamePage(tk.Frame):
             self.canvas.delete(turn)
 
 
-#### TIE
+    def show_last_ai(self, coor):
+        y, x = coor
+        i = x * 100
+        j = y * 90
+        self.last_ai_lst.append(
+            self.canvas.create_oval(9 + i, 110 + j, 90 + i, 190 + j,
+                                    outline="blue", width="10"))
+
+    def delete_last_ai(self):
+
+        for last in self.last_ai_lst:
+            self.canvas.delete(last)

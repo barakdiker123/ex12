@@ -80,7 +80,7 @@ class StartPage(tk.Frame):
         self.color_dict_2 = {self.black: 0, self.yellow: 0, self.pink: 0}
         self.color_dict = {self.white: "antique white", self.red: "red",
                            self.green: "green4", self.black: "black",
-                           self.yellow: "orange", self.pink: "deep pink2"}
+                           self.yellow: "orange", self.pink: "deeppink2"}
 
 
     def create_main_menu(self):
@@ -261,26 +261,26 @@ class StartPage(tk.Frame):
                                command=lambda: self.choose_white(self.white,
                                                             "antique white"))
 
-        self.white_window = self.canvas.create_window(116, 432,
+        self.white_window = self.canvas.create_window(103, 432,
                                                       window=self.white)
         self.red = tk.Button(self, bg="red", text="red",
                              command=lambda: self.choose_red(self.red, "red"))
-        self.red_window = self.canvas.create_window(155, 432, window=self.red)
+        self.red_window = self.canvas.create_window(158, 432, window=self.red)
         self.green = tk.Button(self, bg="green4", text="green",
                     command=lambda: self.choose_green(self.green, "green4"))
-        self.green_window = self.canvas.create_window(194, 432,
+        self.green_window = self.canvas.create_window(215, 432,
                                                       window=self.green)
         self.black = tk.Button(self, bg="black", fg="white", text="black",
                      command=lambda: self.choose_black(self.black, "black"))
-        self.black_window = self.canvas.create_window(495, 432,
+        self.black_window = self.canvas.create_window(482, 432,
                                                       window=self.black)
         self.yellow = tk.Button(self, bg="orange", text="yellow",
                      command=lambda: self.choose_yellow(self.yellow, "orange"))
-        self.yellow_window = self.canvas.create_window(542, 432,
+        self.yellow_window = self.canvas.create_window(545, 432,
                                                        window=self.yellow)
-        self.pink = tk.Button(self, bg="deep pink2", text="pink",
-                    command=lambda: self.choose_pink(self.pink, "deep pink2"))
-        self.pink_window = self.canvas.create_window(587, 432, window=self.pink)
+        self.pink = tk.Button(self, bg="deeppink2", text="pink",
+                    command=lambda: self.choose_pink(self.pink, "deeppink2"))
+        self.pink_window = self.canvas.create_window(605, 432, window=self.pink)
 
 
     def choose_black(self, button, color):
@@ -288,7 +288,7 @@ class StartPage(tk.Frame):
         if not self.color_dict_2[button] % 2:
             button.configure(bg="white", fg="black")
             self.yellow.configure(bg="orange")
-            self.pink.configure(bg="deep pink2")
+            self.pink.configure(bg="deeppink2")
             self.color_dict_2[self.yellow] = 0
             self.color_dict_2[self.pink] = 0
             self.color_dict_2[button] = 1
@@ -298,7 +298,7 @@ class StartPage(tk.Frame):
         if not self.color_dict_2[button] % 2:
             button.configure(bg="white", fg="black")
             self.black.configure(bg="black", fg="white")
-            self.pink.configure(bg="deep pink2")
+            self.pink.configure(bg="deeppink2")
             self.color_dict_2[self.black] = 0
             self.color_dict_2[self.pink] = 0
             self.color_dict_2[button] = 1
@@ -414,7 +414,7 @@ class GamePage(tk.Frame):
         self.button3 = tk.Button(self, text="Help", command=self.help_button,
                                                         anchor="w")
         self.button3.configure(width=10, activebackground="blue")
-        self.button3_window = self.canvas.create_window(190, 10, anchor="nw",
+        self.button3_window = self.canvas.create_window(200, 10, anchor="nw",
                                                         window=self.button3)
 
 
@@ -676,11 +676,14 @@ class GamePage(tk.Frame):
         This is the animation that happens when a player wins or when its
          a tie
          """
-        for checker in self.checkers_lst:
-            self.canvas.move(checker, random.randint(-400, 400),
-                                random.randint(-400, 400))
-            self.update()
-            self.after(10)
+        try:
+            for checker in self.checkers_lst:
+                self.canvas.move(checker, random.randint(-400, 400),
+                                    random.randint(-400, 400))
+                self.update()
+                self.after(10)
+        except:
+            return
 
 
 

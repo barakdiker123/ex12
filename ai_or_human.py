@@ -1,6 +1,3 @@
-from screen import *
-from ex12.game import *
-
 class AIorHuman:
 
     def __init__(self):

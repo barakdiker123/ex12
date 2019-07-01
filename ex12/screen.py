@@ -1,8 +1,8 @@
 import tkinter as tk
 import tkinter.messagebox
-from game import *
-from ai import *
-from board import *
+from ex12.game import *
+from ex12.ai import *
+from ex12.board import *
 import random
 
 LARGE_FONT = ("Verdana bold", 24)
@@ -72,7 +72,7 @@ class StartPage(tk.Frame):
         self.color_dict_2 = {self.black: 0, self.yellow: 0, self.pink: 0}
         self.color_dict = {self.white: "antique white", self.red: "red",
                            self.green: "green4", self.black: "black",
-                           self.yellow: "orange", self.pink: "deep pink2"}
+                           self.yellow: "orange", self.pink: "deeppink2"}
 
 
     def create_main_menu(self):
@@ -269,8 +269,8 @@ class StartPage(tk.Frame):
                      command=lambda: self.choose_yellow(self.yellow, "orange"))
         self.yellow_window = self.canvas.create_window(542, 432,
                                                        window=self.yellow)
-        self.pink = tk.Button(self, bg="deep pink2", text="pink",
-                    command=lambda: self.choose_pink(self.pink, "deep pink2"))
+        self.pink = tk.Button(self, bg="deeppink2", text="pink",
+                    command=lambda: self.choose_pink(self.pink, "deeppink2"))
         self.pink_window = self.canvas.create_window(587, 432, window=self.pink)
 
 
@@ -279,7 +279,7 @@ class StartPage(tk.Frame):
         if not self.color_dict_2[button] % 2:
             button.configure(bg="white", fg="black")
             self.yellow.configure(bg="orange")
-            self.pink.configure(bg="deep pink2")
+            self.pink.configure(bg="deeppink2")
             self.color_dict_2[self.yellow] = 0
             self.color_dict_2[self.pink] = 0
             self.color_dict_2[button] = 1
@@ -289,7 +289,7 @@ class StartPage(tk.Frame):
         if not self.color_dict_2[button] % 2:
             button.configure(bg="white", fg="black")
             self.black.configure(bg="black", fg="white")
-            self.pink.configure(bg="deep pink2")
+            self.pink.configure(bg="deeppink2")
             self.color_dict_2[self.black] = 0
             self.color_dict_2[self.pink] = 0
             self.color_dict_2[button] = 1

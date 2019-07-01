@@ -4,9 +4,8 @@ noa.babliki
 206090409
 
 =====================================
-ex.12 connect 4
+ex.12 connect four
 =====================================
-
 
 =====================================
 Description
@@ -15,16 +14,80 @@ Description
 This is a game of connect four!
 
 In order to play, please choose how you want to play:
-human or ai, for player 1 or player 2.
+human or AI, for player 1 or player 2.
 
 Than, please choose a color for each player.
 
 If you chose human player, please press the column in
 The board you want to insert your checker to.
-ai will play automaticaly.
+AI will play automaticaly.
 
+Your goal in to have 4 checkers in a row, in your color.
 
+When the game is over, it will ask you if you wanna play again,
+and than play a short animation. after the animation, the
+game will start again
 
+If you choose to quit, the game will play the short
+animation and quit.
+
+Enjoy!
+
+=====================================
+AI bonus
+=====================================
+
+The AI engine is based on dictionary which evaluate each move
+by giving each move a score
+if the score is high ,it means that the move is good
+
+=====================================
+Criteria AI 1
+=====================================
+The evaluation is based on couple characteristics
+1)counts the possible 4 in a next move point :
+Assume 1:
+"1" to Move
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+- 0 0 0 0 0
+The - point has 3 possible winning : slant column and row
+
+Assume 2:
+"2" to Move
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+- 0 1 0 0 0
+In this position player "2" in the - point
+has only 2 possible winning options that why
+Assume 1 > Assume 2
+meaning assume 1 has better score in this regard
+
+Assume 3:
+"2" to Move
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 - 0 0 0
+move -> - has 3 possible wins in rows
+also 1 in slant
+and 1 in column
+that's why he'll receive 5 points
+and that's why ->     Assume 3 > Assume 2 > Assume 1
+
+=====================================
+Criteria AI 2
+=====================================
+I did the exact same thing as "Criteria AI 1"
+with a new change it gives an evaluation for 3 instead of 4
+
+=====================================
+Criteria AI 3
+=====================================
+If player moves and this move make the opponent winning in 1 move
+Than the computer really hate this move
 
 
 =====================================
